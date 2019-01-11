@@ -1,0 +1,6 @@
+[submodule "interfaces/interface-reverseproxy"]
+	path = interfaces/interface-reverseproxy
+	url = https://github.com/chris-sanders/interface-reverseproxy.git
+[submodule "layers/layer-version"]
+	path = layers/layer-version
+	url = https://github.com/chris-sanders/layer-version.git

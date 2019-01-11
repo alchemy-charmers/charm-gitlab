@@ -1,0 +1,13 @@
+options:
+  version:
+    type: string
+    default: ""
+    description: "The version of GitLab to install. Defaults (when this setting is empty) to latest."
+  apt_key:
+    type: string
+    default: "14219A96E15E78F4"
+    description: "The APT signing key used for the repository specified by apt_repo"
+  apt_repo:
+    type: string
+    default: "https://packages.gitlab.com/gitlab/gitlab-ee/ubuntu/"
+    description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution (i.e. 'bionic' and the compoent 'main') will be automatically appended to the provided URI"
