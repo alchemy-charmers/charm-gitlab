@@ -5,4 +5,4 @@ from libgitlab import GitlabHelper
 gitlab = GitlabHelper()
 gitlab.action_function()
 
-# vim: syntax=python
+# vim: filetype=python
