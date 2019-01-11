@@ -17,3 +17,6 @@ __pycache__/
 
 # version data
 src/repo-info
+
+# builds
+src/builds/*

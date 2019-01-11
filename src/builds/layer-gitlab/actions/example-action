@@ -1,8 +1,0 @@
-#!/usr/local/sbin/charm-env python3
-
-from libgitlab import GitlabHelper
-
-gitlab = GitlabHelper()
-gitlab.action_function()
-
-# vim: syntax=python
