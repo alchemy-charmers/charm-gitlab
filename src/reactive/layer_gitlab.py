@@ -8,7 +8,7 @@ gitlab = GitlabHelper()
 
 @when_not('gitlab.installed')
 def install_gitlab():
-    hookenv.status_Set('maintenance', 'Installing GitLab')
+    hookenv.status_set('maintenance', 'Installing GitLab')
     fetch.configure_sources(update=True,
                             sources_var='apt_repo',
                             keys_var='apt_key')
