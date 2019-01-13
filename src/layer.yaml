@@ -5,3 +5,4 @@ includes:
 options:
   version:
     file_name: "repo-info"
+repo: https://github.com/pirate-charmers/layer-gitlab.git

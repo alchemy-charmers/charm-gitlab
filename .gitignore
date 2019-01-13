@@ -20,3 +20,6 @@ src/repo-info
 
 # builds
 src/builds/*
+
+# deps
+deps
