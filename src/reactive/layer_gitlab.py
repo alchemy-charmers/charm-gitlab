@@ -12,6 +12,6 @@ def install_gitlab():
     fetch.configure_sources(update=True,
                             sources_var='apt_repo',
                             keys_var='apt_key')
-    fetch.apt_install('gitlab-ee')
+    fetch.apt_install('gitlab-ee', fatal=True)
     hookenv.status_set('active', 'GitLab Installed')
     set_flag('gitlab.installed')
