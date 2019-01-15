@@ -11,3 +11,15 @@ options:
     type: string
     default: "https://packages.gitlab.com/gitlab/gitlab-ee/ubuntu/"
     description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution (i.e. 'bionic' and the compoent 'main') will be automatically appended to the provided URI"
+  external_url:
+    type: string
+    default: ""
+    description: "The external URI of this GitLab install. This will be used to configure GitLab, and any reverse proxy configured via the reverseproxy relation. Defaults to the fqdn of the unit."
+  http_port:
+    type: int
+    default: 8080
+    description: "The HTTP port the GitLab backend will listen for connections on. It is recommended to relate this charm to a reverse proxy, rather than customising this value"
+  ssh_port:
+    type: int
+    default: 2222
+    description: "The TCP port over which SSH-based git clone operations will be available."

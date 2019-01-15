@@ -35,6 +35,30 @@ async def test_gitlab_deploy(model, series):
     assert True
 
 
+@pytest.mark.parametrize('series', series)
+async def test_mysql_relate(model, series):
+    sql = await model.deploy(
+        'cs:mysql',
+        series='xenial')
+    await model.block_until(lambda: sql.status == 'active')
+    await model.add_relation(
+        'gitlab:db',
+        'mysql')
+    assert True
+
+
+@pytest.mark.parametrize('series', series)
+async def test_redis_relate(model, series):
+    redis = await model.deploy(
+        'cs:~omnivector/redis',
+        series='xenial')
+    await model.block_until(lambda: redis.status == 'active')
+    await model.add_relation(
+        'gitlab:redis',
+        'redis')
+    assert True
+
+
 # def test_example_action(self, deploy, unit):
 #     uuid = unit.run_action('example-action')
 #     action_output = deploy.get_action_output(uuid, full_output=True)

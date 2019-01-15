@@ -40,6 +40,7 @@ clean:
 	@echo "Cleaning files"
 	@if [ -d src/.tox ] ; then rm -r src/.tox ; fi
 	@if [ -d src/.pytest_cache ] ; then rm -r src/.pytest_cache ; fi
+	find . -iname \*.pyc -delete
 
 # The targets below don't depend on a file
 .PHONY: lint test unittest functional build release clean help submodules

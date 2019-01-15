@@ -11,3 +11,8 @@ series:
 provides:
   reverseproxy:
     interface: reverseproxy
+requires:
+  db:
+    interface: mysql
+  redis:
+    interface: redis
