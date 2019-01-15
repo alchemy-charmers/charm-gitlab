@@ -3,6 +3,6 @@
 from libgitlab import GitlabHelper
 
 gitlab = GitlabHelper()
-gitlab.action_function()
+gitlab.configure()
 
 # vim: filetype=python

@@ -1,2 +1,2 @@
-example-action:
-  description: "This is just a test"
+reconfigure:
+  description: "Re-renders gitlab.rb configuration file from Juju state and runs `gitlab-ctl reconfigure`"
