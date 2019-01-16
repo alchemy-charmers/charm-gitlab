@@ -24,6 +24,9 @@ gitlab_rails['redis_port'] = "{{ redis_port }}"
 postgresql['enable'] = false
 redis['enable'] = false
 
+##! HTTP options
+nginx['listen_port'] = "{{ http_port }}"
+
 ################################################################################
 ################################################################################
 ##            Reference Configuration Settings for GitLab CE and EE           ##

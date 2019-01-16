@@ -1,3 +1,9 @@
+# for python 2 & 3 compat
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 from charmhelpers.core import hookenv, host, templating, unitdata
 from charms.reactive.helpers import any_file_changed
 import subprocess
@@ -25,6 +31,24 @@ class GitlabHelper():
             fqdn = "http://{}".format(
                 socket.getfqdn())
             return fqdn
+
+    def configure_proxy(self, proxy):
+
+        url = urlparse(self.get_external_uri())
+
+        if url.scheme == 'https':
+            port = 443
+        else:
+            port = 80
+
+        proxy_config = {
+            'mode': 'http',
+            'external_port': port,
+            'internal_host': socket.getfqdn(),
+            'internal_port': self.charm_config['http_port'],
+            'subdomain': url.hostname
+        }
+        proxy.configure(proxy_config)
 
     def save_mysql_conf(self, mysql):
         self.kv.set('mysql_host', mysql.host())
@@ -66,6 +90,7 @@ class GitlabHelper():
                             'mysql_password': self.kv.get('mysql_pass'),
                             'redis_host': self.kv.get('redis_host'),
                             'redis_port': self.kv.get('redis_port'),
+                            'http_port': self.charm_config['http_port'],
                             'url': self.get_external_uri()
                           })
 

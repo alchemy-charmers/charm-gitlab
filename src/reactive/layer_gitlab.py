@@ -1,6 +1,14 @@
 from charmhelpers.core import hookenv
-from charms.reactive import when_not, when_all, when_any, when
-from charms.reactive import clear_flag, set_flag, endpoint_from_flag
+from charms.reactive import (
+    when_not,
+    when_all,
+    when_any,
+    when,
+    clear_flag,
+    set_flag,
+    endpoint_from_flag,
+    endpoint_from_name
+)
 from charmhelpers import fetch
 from libgitlab import GitlabHelper
 
@@ -119,7 +127,7 @@ def remove_proxy():
     clear_flag('reverseproxy.configured')
 
 
-@when('reverseproxy.changed')
+@when('reverseproxy.ready')
 @when_not('reverseproxy.configured')
 def configure_proxy():
     hookenv.status_set(
@@ -127,6 +135,9 @@ def configure_proxy():
         'Applying reverse proxy configuration')
     hookenv.log("Configuring reverse proxy via: {}".format(
         hookenv.remote_unit()))
+
+    interface = endpoint_from_name('reverseproxy')
+    gitlab.configure_proxy(interface)
 
     hookenv.status_set('active', HEALTHY)
     set_flag('reverseproxy.configured')

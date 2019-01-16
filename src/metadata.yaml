@@ -9,10 +9,9 @@ tags:
 subordinate: false
 series:
   - bionic
-provides:
+requires:
   reverseproxy:
     interface: reverseproxy
-requires:
   db:
     interface: mysql
   redis:
