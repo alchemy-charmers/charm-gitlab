@@ -36,6 +36,10 @@ build:
 release: clean build
 	@echo "Charm is built at $(JUJU_REPOSITORY)/builds"
 
+push: release
+	@echo "Pushing $(JUJU_REPOSITORY)/builds/gitlab"
+	@charm push $(JUJU_REPOSITORY)/builds/gitlab cs:~pirate-charmers/gitlab
+
 clean:
 	@echo "Cleaning files"
 	@if [ -d src/.tox ] ; then rm -r src/.tox ; fi

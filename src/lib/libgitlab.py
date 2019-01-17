@@ -41,13 +41,21 @@ class GitlabHelper():
         else:
             port = 80
 
-        proxy_config = {
-            'mode': 'http',
-            'external_port': port,
-            'internal_host': socket.getfqdn(),
-            'internal_port': self.charm_config['http_port'],
-            'subdomain': url.hostname
-        }
+        proxy_config = [
+            {
+                'mode': 'http',
+                'external_port': port,
+                'internal_host': socket.getfqdn(),
+                'internal_port': self.charm_config['http_port'],
+                'subdomain': url.hostname
+            },
+            {
+                'mode': 'tcp',
+                'external_port': self.charm_config['ssh_port'],
+                'internal_host': socket.getfqdn(),
+                'internal_port': self.charm_config['ssh_port']
+            }
+        ]
         proxy.configure(proxy_config)
 
     def save_mysql_conf(self, mysql):
@@ -91,6 +99,7 @@ class GitlabHelper():
                             'redis_host': self.kv.get('redis_host'),
                             'redis_port': self.kv.get('redis_port'),
                             'http_port': self.charm_config['http_port'],
+                            'ssh_port': self.charm_config['ssh_port'],
                             'url': self.get_external_uri()
                           })
 
