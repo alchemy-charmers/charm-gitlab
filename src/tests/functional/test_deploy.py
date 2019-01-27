@@ -28,18 +28,22 @@ async def test_gitlab_deploy(model, series):
     # deploys from the layer, rather than the built charm, which
     # needs to be fixed
     app = await model.deploy('{}/builds/{}'.format(
-            juju_repository,
-            charmname),
-        series=series)
-    await model.block_until(lambda: app.status == 'active')
+                             juju_repository,
+                             charmname),
+                             series=series)
+    await model.deploy(
+        'cs:mysql',
+        series='xenial')
+    await model.deploy(
+        'cs:~omnivector/redis',
+        series='xenial')
+    await model.block_until(lambda: app.status == 'blocked')
     assert True
 
 
 @pytest.mark.parametrize('series', series)
 async def test_mysql_relate(model, series):
-    sql = await model.deploy(
-        'cs:mysql',
-        series='xenial')
+    sql = model.applications['mysql']
     await model.block_until(lambda: sql.status == 'active')
     await model.add_relation(
         'gitlab:db',
@@ -49,9 +53,7 @@ async def test_mysql_relate(model, series):
 
 @pytest.mark.parametrize('series', series)
 async def test_redis_relate(model, series):
-    redis = await model.deploy(
-        'cs:~omnivector/redis',
-        series='xenial')
+    redis = model.applications['redis']
     await model.block_until(lambda: redis.status == 'active')
     await model.add_relation(
         'gitlab:redis',
