@@ -32,5 +32,6 @@ This charm is written by James Hebden of the Pirate Charmers group.
 
   - configuration of SMTP settings
   - postgresql support (currenly MySQL only)
-  - redis relation for external redis
   - administrative password management via juju config
+  - specify option to pass hostname over reverseproxy relation
+  - specify option to override address used for reverseproxy
