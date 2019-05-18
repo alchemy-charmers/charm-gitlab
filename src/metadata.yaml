@@ -9,6 +9,9 @@ tags:
 subordinate: false
 series:
   - bionic
+provides:
+  runner:
+    interface: gitlab-ci
 requires:
   reverseproxy:
     interface: reverseproxy
