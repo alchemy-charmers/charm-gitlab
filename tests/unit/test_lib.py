@@ -1,18 +1,21 @@
 #!/usr/bin/python3
-
+"""Test helper library usage."""
 from charmhelpers.core import unitdata
 
 
-class TestLib():
-    def test_pytest(self):
-        assert True
+def test_pytest():
+    """Test pytest actually tests."""
+    assert True
 
-    def test_gitlab(self, libgitlab):
-        ''' See if the helper fixture works to load charm configs '''
-        assert isinstance(libgitlab.charm_config, dict)
 
-    def test_gitlab_kv(self, libgitlab):
-        ''' See if the unitdata kv helper is loaded '''
-        assert isinstance(libgitlab.kv, unitdata.Storage)
+def test_gitlab(libgitlab):
+    """See if the helper fixture works to load charm configs."""
+    assert isinstance(libgitlab.charm_config, dict)
 
-    # Include tests for functions in libgitlab
+
+def test_gitlab_kv(libgitlab):
+    """See if the unitdata kv helper is loaded."""
+    assert isinstance(libgitlab.kv, unitdata.Storage)
+
+
+# Include tests for functions in libgitlab
