@@ -72,9 +72,6 @@ async def test_mysql_deploy(model, series, app, request):
 
 
 async def test_mysql_relate(model, series, app, request):
-    if app.name.endswith('jujucharms'):
-        pytest.skip("No need to test the charm deploy")
-
     application_name = 'gitlab-mysql-{}'.format(series)
     sql = await model._wait_for_new('application', application_name)
     await model.block_until(lambda: sql.status == 'active')
@@ -82,6 +79,10 @@ async def test_mysql_relate(model, series, app, request):
     await model.add_relation(
         '{}:db'.format(app.name),
         application_name)
+    await model.block_until(lambda: sql.status == 'active' or sql.status == 'error')
+    await model.block_until(lambda: app.status == 'blocked' or app.status == 'error')
+    assert sql.status is not 'error'
+    assert app.status is not 'error'
 
 
 async def test_redis_deploy(model, series, app, request):
@@ -98,9 +99,6 @@ async def test_redis_deploy(model, series, app, request):
 
 
 async def test_redis_relate(model, series, app, request):
-    if app.name.endswith('jujucharms'):
-        pytest.skip("No need to test the charm deploy")
-
     application_name = 'gitlab-redis-{}'.format(series)
     redis = await model._wait_for_new('application', application_name)
     await model.block_until(lambda: redis.status == 'active')
@@ -108,6 +106,10 @@ async def test_redis_relate(model, series, app, request):
     await model.add_relation(
         '{}:redis'.format(app.name),
         application_name)
+    await model.block_until(lambda: redis.status == 'active' or redis.status == 'error')
+    await model.block_until(lambda: app.status == 'active' or app.status == 'error')
+    assert redis.status is not 'error'
+    assert app.status is not 'error'
 
 
 async def test_charm_upgrade(model, app, request):
@@ -116,24 +118,20 @@ async def test_charm_upgrade(model, app, request):
 
     unit = app.units[0]
     await model.block_until(lambda: unit.agent_status == 'idle')
-    await asyncio.create_subprocess_shell(['juju',
-                                           'upgrade-charm',
-                                           '--switch={}'.format(sources[0][1]),
-                                           '-m', model.info.name,
-                                           app.name,
-                                           ])
-    await model.block_until(lambda: unit.agent_status == 'executing')
-
-
-# Tests
-async def test_gitlab_status(model, app):
-    # Verifies status for all deployed series of the charm
-    await model.block_until(lambda: app.status == 'active')
-    unit = app.units[0]
-    await model.block_until(lambda: unit.agent_status == 'idle')
+    await asyncio.create_subprocess_shell(
+        'juju upgrade-charm --switch={} -m {} {}'.format(
+            sources[0][1],
+            model.info.name,
+            app.name))
+    await model.block_until(lambda: unit.agent_status == 'idle' or unit.agent_status == 'error')
+    await model.block_until(lambda: app.status == 'active' or app.status == 'error')
+    assert unit.agent_status is not 'error'
+    assert app.status is not 'error'
 
 
 async def test_reconfigure_action(app):
+    if app.name.endswith('jujucharms'):
+        pytest.skip("No need to test the charm deploy")
     unit = app.units[0]
     action = await unit.run_action('reconfigure')
     action = await action.wait()
@@ -141,6 +139,8 @@ async def test_reconfigure_action(app):
 
 
 async def test_run_command(app, jujutools):
+    if app.name.endswith('jujucharms'):
+        pytest.skip("No need to test the charm deploy")
     unit = app.units[0]
     cmd = 'hostname -i'
     results = await jujutools.run_command(cmd, unit)
@@ -149,6 +149,8 @@ async def test_run_command(app, jujutools):
 
 
 async def test_juju_file_stat(app, jujutools):
+    if app.name.endswith('jujucharms'):
+        pytest.skip("No need to test the charm deploy")
     unit = app.units[0]
     path = '/var/lib/juju/agents/unit-{}/charm/metadata.yaml'.format(unit.entity_id.replace('/', '-'))
     fstat = await jujutools.file_stat(path, unit)
