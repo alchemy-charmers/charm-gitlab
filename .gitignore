@@ -16,13 +16,7 @@ __pycache__/
 .idea/
 
 # version data
-src/repo-info
+repo-info
 
-# builds
-src/builds/*
-
-# deps
-deps
-
-# test db
-src/*.db
+# reports
+report/*
