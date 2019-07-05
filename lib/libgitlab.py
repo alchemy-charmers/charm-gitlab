@@ -119,7 +119,7 @@ class GitlabHelper:
         return False
 
     def redis_configured(self):
-        """Determine if Redis is related and the KV has been updated with configuration"""
+        """Determine if Redis is related and the KV has been updated with configuration."""
         if (
             self.kv.get("redis_host")
             and self.kv.get("redis_port")

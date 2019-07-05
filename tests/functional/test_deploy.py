@@ -131,7 +131,7 @@ async def test_pgsql_relate(model, series, app, request):
     print('Relating {} with {}'.format(app.name, application_name))
     await model.add_relation(
         '{}:pgsql'.format(app.name),
-        '{}:db'.format(application_name))
+        '{}:db-admin'.format(application_name))
     print(sql)
     await model.block_until(lambda: sql.status == "active" or sql.status == "error")
     await model.block_until(lambda: app.status == "active" or app.status == "error")
@@ -199,9 +199,10 @@ async def test_pgsql_unrelate(model, series, app, request):
     application_name = 'gitlab-postgresql-{}'.format(series)
     sql = model.applications[application_name]
     print('Removing relation betweeen {} and {}'.format(app.name, application_name))
-    await model.remove_relation(
+    await sql.remove_relation(
+        'db-admin',
         '{}:pgsql'.format(app.name),
-        '{}:db'.format(application_name))
+    )
     await model.block_until(lambda: sql.status == "active" or sql.status == "error")
     await model.block_until(lambda: app.status == "blocked" or app.status == "error")
     assert sql.status != "error"
