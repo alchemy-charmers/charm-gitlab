@@ -2,6 +2,7 @@ includes:
   - layer:basic
   - layer:version
   - interface:reverseproxy
+  - interface:pgsql
   - interface:mysql
   - interface:redis
 options:

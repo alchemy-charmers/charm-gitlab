@@ -13,3 +13,6 @@
 [submodule "interfaces/interface-gitlab-ci"]
 	path = interfaces/interface-gitlab-ci
 	url = https://github.com/pirate-charmers/interface-gitlab-ci.git
+[submodule "interfaces/interface-pgsql"]
+	path = interfaces/interface-pgsql
+	url = https://git.launchpad.net/interface-pgsql

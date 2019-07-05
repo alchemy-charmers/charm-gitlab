@@ -17,5 +17,7 @@ requires:
     interface: reverseproxy
   db:
     interface: mysql
+  pgsql:
+    interface: pgsql
   redis:
     interface: redis
