@@ -10,7 +10,7 @@ options:
   apt_repo:
     type: string
     default: "https://packages.gitlab.com/gitlab/gitlab-ee/ubuntu/"
-    description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution (i.e. 'bionic' and the compoent 'main') will be automatically appended to the provided URI"
+    description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution (i.e. 'bionic' and the component 'main') will be automatically appended to the provided URI"
   external_url:
     type: string
     default: ""

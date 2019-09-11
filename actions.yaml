@@ -1,2 +1,6 @@
 reconfigure:
   description: "Re-renders gitlab.rb configuration file from Juju state and runs `gitlab-ctl reconfigure`"
+migratedb:
+  description: "Used migrating the database from MySQL to PostgreSQL. Refer to the charm README for instructions."
+upgrade:
+  description: "Upgrade GitLab. This will walk through required version upgrades per the documented GitLab upgrade process."

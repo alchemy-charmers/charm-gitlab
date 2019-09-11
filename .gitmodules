@@ -16,3 +16,6 @@
 [submodule "interfaces/interface-pgsql"]
 	path = interfaces/interface-pgsql
 	url = https://git.launchpad.net/interface-pgsql
+[submodule "layers/layer-basic"]
+	path = layers/layer-basic
+	url = https://github.com/juju-solutions/layer-basic.git

@@ -54,17 +54,6 @@ async def test_gitlab_deploy(model, series, source, request):
     await model.block_until(lambda: app.status == "waiting")
 
 
-async def test_gitlab_deploy_status(model, app, request):
-    """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
-    unit = app.units[0]
-    await model.block_until(
-        lambda: unit.agent_status == "idle" or unit.agent_status == "error"
-    )
-    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
-    assert unit.agent_status != "error"
-    assert app.status != "error"
-
-
 async def test_redis_deploy(model, series, app, request):
     """Create a Redis deployment for testing relation to GitLab."""
     if app.name.endswith("jujucharms"):
@@ -75,9 +64,7 @@ async def test_redis_deploy(model, series, app, request):
         model.info.name, application_name
     )
     await asyncio.create_subprocess_shell(cmd)
-    redis = await model._wait_for_new('application', application_name)
-    await model.block_until(lambda: redis.status == "active" or redis.status == "error")
-    assert redis.status != "error"
+    await model._wait_for_new("application", application_name)
 
 
 async def test_pgsql_deploy(model, series, app, request):
@@ -90,9 +77,7 @@ async def test_pgsql_deploy(model, series, app, request):
         model.info.name, application_name
     )
     await asyncio.create_subprocess_shell(cmd)
-    sql = await model._wait_for_new('application', application_name)
-    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
-    assert sql.status != "error"
+    await model._wait_for_new("application", application_name)
 
 
 async def test_mysql_deploy(model, series, app, request):
@@ -105,34 +90,101 @@ async def test_mysql_deploy(model, series, app, request):
         model.info.name, application_name
     )
     await asyncio.create_subprocess_shell(cmd)
-    sql = await model._wait_for_new('application', application_name)
-    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
-    assert sql.status != "error"
+    await model._wait_for_new("application", application_name)
+
+
+async def test_initial_deploy_status(model, app, request, series):
+    """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
+    unit = app.units[0]
+    await model.block_until(
+        lambda: unit.agent_status == "idle" or unit.agent_status == "error"
+    )
+    pgsql = model.applications["gitlab-postgresql-{}".format(series)]
+    mysql = model.applications["gitlab-mysql-{}".format(series)]
+    redis = model.applications["gitlab-redis-{}".format(series)]
+    await model.block_until(lambda: pgsql.status == "active" or app.status == "error")
+    await model.block_until(lambda: mysql.status == "active" or app.status == "error")
+    await model.block_until(lambda: redis.status == "active" or app.status == "error")
+    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
+    assert unit.agent_status != "error"
+    assert pgsql.status != "error"
+    assert mysql.status != "error"
+    assert redis.status != "error"
+    assert app.status != "error"
 
 
 async def test_redis_relate(model, series, app, request):
     """Test relating Redis to GitLab."""
-    application_name = 'gitlab-redis-{}'.format(series)
+    application_name = "gitlab-redis-{}".format(series)
     redis = model.applications[application_name]
-    print('Relating {} with {}'.format(app.name, 'redis'))
-    await model.add_relation(
-        '{}:redis'.format(app.name),
-        application_name)
+    await model.add_relation("{}:redis".format(app.name), application_name)
     await model.block_until(lambda: redis.status == "active" or redis.status == "error")
     await model.block_until(lambda: app.status == "blocked" or app.status == "error")
     assert redis.status != "error"
     assert app.status != "error"
 
 
+async def test_mysql_relate(model, series, app, request):
+    """Test relating MySQL to GitLab, expect failure due to removal of MySQL support."""
+    application_name = "gitlab-mysql-{}".format(series)
+    sql = model.applications[application_name]
+    await model.add_relation("{}:db".format(app.name), application_name)
+    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
+    await model.block_until(lambda: app.status == "active" or app.status == "blocked")
+    assert sql.status != "error"
+    assert app.status != "error"
+
+
+async def test_gitlab_deploy_status_mysql(model, app, request):
+    """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
+    unit = app.units[0]
+    await model.block_until(
+        lambda: unit.agent_status == "idle" or unit.agent_status == "error"
+    )
+    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
+    assert unit.agent_status != "error"
+    assert app.status != "error"
+
+
 async def test_pgsql_relate(model, series, app, request):
     """Test relating PostgreSQL to GitLab."""
-    application_name = 'gitlab-postgresql-{}'.format(series)
+    application_name = "gitlab-postgresql-{}".format(series)
     sql = model.applications[application_name]
-    print('Relating {} with {}'.format(app.name, application_name))
     await model.add_relation(
-        '{}:pgsql'.format(app.name),
-        '{}:db-admin'.format(application_name))
-    print(sql)
+        "{}:pgsql".format(app.name), "{}:db-admin".format(application_name)
+    )
+    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
+    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
+    assert sql.status != "error"
+    assert app.status != "error"
+
+
+async def test_migrate_action(app):
+    """Test migrate execution against deployed GitLab instances for the local charm."""
+    if app.name.endswith("jujucharms"):
+        pytest.skip("No need to test the charm deploy")
+    unit = app.units[0]
+    action = await unit.run_action("migratedb")
+    action = await action.wait()
+    assert action.status == "completed"
+
+
+async def test_gitlab_deploy_status_migrate(model, app, request):
+    """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
+    unit = app.units[0]
+    await model.block_until(
+        lambda: unit.agent_status == "idle" or unit.agent_status == "error"
+    )
+    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
+    assert unit.agent_status != "error"
+    assert app.status != "error"
+
+
+async def test_mysql_unrelate(model, series, app, request):
+    """Test removing MySQL relation to GitLab, unit should configure and enter active state."""
+    application_name = "gitlab-mysql-{}".format(series)
+    sql = model.applications[application_name]
+    await sql.remove_relation("db", "{}:db".format(app.name))
     await model.block_until(lambda: sql.status == "active" or sql.status == "error")
     await model.block_until(lambda: app.status == "active" or app.status == "error")
     assert sql.status != "error"
@@ -192,33 +244,3 @@ async def test_juju_file_stat(app, jujutools):
     assert stat.filemode(fstat.st_mode) == "-rw-r--r--"
     assert fstat.st_uid == 0
     assert fstat.st_gid == 0
-
-
-async def test_pgsql_unrelate(model, series, app, request):
-    """Test removing PostgreSQL relation to GitLab, unit should return to blocked state."""
-    application_name = 'gitlab-postgresql-{}'.format(series)
-    sql = model.applications[application_name]
-    print('Removing relation betweeen {} and {}'.format(app.name, application_name))
-    await sql.remove_relation(
-        'db-admin',
-        '{}:pgsql'.format(app.name),
-    )
-    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
-    await model.block_until(lambda: app.status == "blocked" or app.status == "error")
-    assert sql.status != "error"
-    assert app.status != "error"
-
-
-@pytest.mark.xfail
-async def test_mysql_relate(model, series, app, request):
-    """Test relating MySQL to GitLab, expect failure due to removal of MySQL support."""
-    application_name = 'gitlab-mysql-{}'.format(series)
-    sql = model.applications[application_name]
-    print('Relating {} with {}'.format(app.name, application_name))
-    await model.add_relation(
-        '{}:db'.format(app.name),
-        application_name)
-    await model.block_until(lambda: sql.status == "active" or sql.status == "error")
-    await model.block_until(lambda: app.status == "active" or app.status == "error")
-    assert sql.status != "error"
-    assert app.status != "error"

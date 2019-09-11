@@ -5,6 +5,9 @@ includes:
   - interface:pgsql
   - interface:mysql
   - interface:redis
+ignore:
+  - report
+  - tests
 options:
   version:
     file_name: "repo-info"

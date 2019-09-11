@@ -1,1 +1,2 @@
 # Include python requirements here
+semantic_version==2.8.2

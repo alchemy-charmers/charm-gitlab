@@ -1,6 +1,5 @@
 """Provides the main reactive layer for the GitLab charm."""
 
-from charmhelpers import fetch
 from charmhelpers.core import hookenv
 
 from charms.reactive import (
@@ -31,19 +30,20 @@ def set_pgsql_db():
     pgsql.set_database("gitlab")
 
 
-@when_any("db.departed", "pgsql.departed")
-def remove_db():
-    """Remove the DB configuration when the relation has been removed."""
-    hookenv.status_set("maintenance", "Cleaning up removed database relation")
+@when_any("pgsql.departed")
+def remove_pgsql():
+    """Remove the PostgreSQL DB configuration when the relation has been removed."""
+    hookenv.status_set("maintenance", "Cleaning up removed pgsql relation")
     hookenv.log("Removing config for: {}".format(hookenv.remote_unit()))
-    if is_flag_set("pgsql.database.available") or is_flag_set("db.connected"):
-        hookenv.log(
-            "Ignoring request to remove config for {}, there is still another DB related".format(
-                hookenv.remote_unit()
-            )
-        )
-    else:
-        gitlab.remove_db_conf()
+    gitlab.remove_pgsql_conf()
+
+
+@when_any("db.departed")
+def remove_mysql():
+    """Remove the Legacy MySQL DB configuration when the relation has been removed."""
+    hookenv.status_set("maintenance", "Cleaning up legacy MySQL relation")
+    hookenv.log("Removing config for: {}".format(hookenv.remote_unit()))
+    gitlab.remove_mysql_conf()
 
 
 @when("endpoint.redis.departed")
@@ -68,15 +68,8 @@ def remove_proxy():
 @when_not("gitlab.installed")
 def install_gitlab():
     """Installs GitLab based on configured version."""
-    version = hookenv.config("version")
-
     hookenv.status_set("maintenance", "Installing GitLab")
-    fetch.configure_sources(update=True, sources_var="apt_repo", keys_var="apt_key")
-    if version:
-        fetch.apt_install("gitlab-ee=".format(version), fatal=True)
-    else:
-        fetch.apt_install("gitlab-ee", fatal=True)
-
+    gitlab.initial_install()
     hookenv.status_set("active", "GitLab Installed")
     set_flag("gitlab.installed")
 
@@ -89,11 +82,11 @@ def wait_pgsql():
 
 
 @when("gitlab.installed")
-@when_none("db.connected", "pgsql.database.available")
+@when_not("pgsql.database.available")
 @when("endpoint.redis.available")
 def missing_db_relation():
     """Complains if either database relation is missing, but not the Redis one."""
-    hookenv.status_set("blocked", "Missing relation to either PostgreSQL or MySQL")
+    hookenv.status_set("blocked", "Missing relation to PostgreSQL")
 
 
 @when("gitlab.installed")
@@ -105,12 +98,10 @@ def missing_redis_relation():
 
 
 @when("gitlab.installed")
-@when_none("db.available", "pgsql.database.available", "endpoint.redis.available")
+@when_none("pgsql.database.available", "endpoint.redis.available")
 def missing_all_relations():
     """Complain when neither the Redis or DB relations are related."""
-    hookenv.status_set(
-        "blocked", "Missing relation to Redis and either PostgreSQL or MySQL"
-    )
+    hookenv.status_set("blocked", "Missing relation to Redis and PostgreSQL")
 
 
 @when_all("gitlab.installed", "endpoint.redis.available")
@@ -119,7 +110,7 @@ def missing_all_relations():
     "config.changed", "db.changed", "pgsql.database.changed", "endpoint.redis.changed"
 )
 def configure_gitlab(reverseproxy, *args):
-    """Reconfigured GitLab on configuration changes.
+    """Upgrade and reconfigure GitLab on configuration changes.
 
     Templates the GitLab Omnibus configuration file, rerunning the OmniBus
     installer to handle actual configuration.
@@ -133,18 +124,52 @@ def configure_gitlab(reverseproxy, *args):
     if redis:
         gitlab.save_redis_conf(redis)
 
-    if is_flag_set("pgsql.database.available"):
-        db = endpoint_from_flag("pgsql.database.available")
+    if (
+        is_flag_set("pgsql.database.available")
+        and is_flag_set("db.available")
+        and gitlab.mysql_migrated()
+    ):
+        hookenv.log(
+            "Both PostgreSQL and MySQL related, and migration complet. Please remove MySQL relation to continue."
+        )
+        hookenv.status_set(
+            "blocked",
+            "Both PostgreSQL and MySQL related, and migration complet. Please remove MySQL relation to continue.",
+        )
+        return
+    elif (
+        is_flag_set("pgsql.database.available")
+        and is_flag_set("db.available")
+        and not gitlab.mysql_migrated()
+    ):
+        mysql = endpoint_from_flag("db.available")
+        pgsql = endpoint_from_flag("pgsql.database.available")
+        hookenv.log(
+            "Both PostgreSQL and MySQL related, run migrate-db action and then remve MySQL relation to finish setup."
+        )
+        hookenv.status_set(
+            "blocked",
+            "Both PgSQL and MySQL related. Please refer to the charm README on how to finish migration.",
+        )
+        gitlab.save_mysql_conf(mysql)
+        gitlab.save_pgsql_conf(pgsql)
+        return
+    elif is_flag_set("pgsql.database.available") and not is_flag_set("db.available"):
+        pgsql = endpoint_from_flag("pgsql.database.available")
         hookenv.log("Detected PostgreSQL database during configure")
-    else:
-        db = endpoint_from_flag("db.available")
-        hookenv.log("Detected MySQL database during configure")
+        gitlab.save_pgsql_conf(pgsql)
+    elif is_flag_set("db.available") and not is_flag_set("pgsql.database.available"):
+        mysql = endpoint_from_flag("db.available")
+        hookenv.log(
+            "MySQL unsupported. Please relate this service to a healthy PostgreSQL cluster using the db-admin relation."
+        )
+        gitlab.save_mysql_conf(mysql)
+        hookenv.status_set(
+            "blocked", "MySQL unsupported. Please migrate to PostgreSQL."
+        )
+        return
 
-    if db:
-        hookenv.log("Found DB configuration provided from endpoint: {}".format(db))
-        gitlab.save_db_conf(db)
-
-    if gitlab.db_configured() and gitlab.redis_configured():
+    if gitlab.pgsql_configured() and gitlab.redis_configured():
         hookenv.log("Running GitLab configuration/install")
         if gitlab.configure():
             hookenv.status_set("active", HEALTHY)
