@@ -11,12 +11,12 @@ nginx['redirect_http_to_https'] = false
 nginx['listen_https'] = false
 
 ##! Database settings
-gitlab_rails['db_adapter'] = "mysql2"
-gitlab_rails['db_username'] = "{{ mysql_user }}"
-gitlab_rails['db_password'] = "{{ mysql_password }}"
-gitlab_rails['db_database'] = "{{ mysql_database }}"
-gitlab_rails['db_host'] = "{{ mysql_host }}"
-gitlab_rails['db_port'] = "{{ mysql_port }}"
+gitlab_rails['db_adapter'] = "{{ db_adapter }}"
+gitlab_rails['db_username'] = "{{ db_user }}"
+gitlab_rails['db_password'] = "{{ db_password }}"
+gitlab_rails['db_database'] = "{{ db_database }}"
+gitlab_rails['db_host'] = "{{ db_host }}"
+gitlab_rails['db_port'] = "{{ db_port }}"
 gitlab_rails['db_encoding'] = "utf8"
 
 ##! Redis settings
@@ -38,6 +38,7 @@ letsencrypt['enable'] = false
 # other stuff
 mattermost['enable'] = false
 # we let prometheus charms take care of this
+prometheus['enable'] = false
 alertmanager['enable'] = false 
 node_exporter['enable'] = false
 redis_exporter['enable'] = false

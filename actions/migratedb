@@ -3,6 +3,6 @@
 from libgitlab import GitlabHelper
 
 gitlab = GitlabHelper()
-gitlab.configure()
+gitlab.migrate_db()
 
 # vim: filetype=python

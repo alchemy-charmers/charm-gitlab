@@ -15,6 +15,8 @@ import subprocess
 import uuid
 
 from juju.controller import Controller
+from juju.errors import JujuConnectionError
+from juju.model import Model
 
 from juju_tools import JujuTools
 
@@ -43,13 +45,31 @@ async def controller():
 
 @pytest.fixture(scope="module")
 async def model(controller):
-    """Return the model created for this test invocation."""
-    model_name = "functest-{}".format(str(uuid.uuid4())[-12:])
-    _model = await controller.add_model(
-        model_name,
-        cloud_name=os.getenv("PYTEST_CLOUD_NAME"),
-        region=os.getenv("PYTEST_CLOUD_REGION"),
-    )
+    """Return the model for the test."""
+    model_name = os.getenv("PYTEST_MODEL")
+    if model_name:
+        # Reuse existing model
+        _model = Model()
+        full_name = "{}:{}".format(
+            controller.controller_name, os.getenv("PYTEST_MODEL")
+        )
+        try:
+            await _model.connect(full_name)
+        except JujuConnectionError:
+            # Let's create it since it's missing
+            _model = await controller.add_model(
+                model_name,
+                cloud_name=os.getenv("PYTEST_CLOUD_NAME"),
+                region=os.getenv("PYTEST_CLOUD_REGION"),
+            )
+    else:
+        # Create a new random model
+        model_name = "functest-{}".format(str(uuid.uuid4())[-12:])
+        _model = await controller.add_model(
+            model_name,
+            cloud_name=os.getenv("PYTEST_CLOUD_NAME"),
+            region=os.getenv("PYTEST_CLOUD_REGION"),
+        )
     # https://github.com/juju/python-libjuju/issues/267
     subprocess.check_call(["juju", "models"])
     while model_name not in await controller.list_models():
@@ -64,6 +84,6 @@ async def model(controller):
 
 @pytest.fixture(scope="module")
 async def jujutools(controller, model):
-    """Return an instance of the jujutools class for use as a fixture in tests."""
+    """Create a fixture from a new instance of the JujuTools helper class."""
     tools = JujuTools(controller, model)
     return tools

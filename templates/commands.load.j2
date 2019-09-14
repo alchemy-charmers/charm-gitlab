@@ -1,0 +1,15 @@
+LOAD DATABASE
+     FROM mysql://{{ mysql_user }}:{{ mysql_password }}@{{ mysql_host }}:{{ mysql_port }}/{{ mysql_database }}
+     INTO postgresql://{{ pgsql_user }}:{{ pgsql_password }}@{{ pgsql_host }}:{{ pgsql_port }}/{{ pgsql_database }}
+
+WITH include no drop, disable triggers, create no tables,
+     create no indexes, preserve index names, no foreign keys,
+     data only
+
+SET MySQL PARAMETERS
+net_read_timeout = '90',
+net_write_timeout = '180'
+
+ALTER SCHEMA '{{ mysql_database }}' RENAME TO 'public'
+
+;
