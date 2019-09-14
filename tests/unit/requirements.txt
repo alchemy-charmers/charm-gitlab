@@ -3,3 +3,4 @@ charms.reactive
 mock
 pytest
 pytest-cov
+pytest-html
