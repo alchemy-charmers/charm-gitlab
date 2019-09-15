@@ -14,6 +14,7 @@ import subprocess
 from charmhelpers import fetch
 from charmhelpers.core import hookenv, host, templating, unitdata
 from charmhelpers.fetch import ubuntu_apt_pkg
+from charms.reactive.flags import _get_flag_value
 
 from charms.reactive.helpers import any_file_changed
 
@@ -62,6 +63,13 @@ class GitlabHelper:
             return url.hostname
         else:
             return socket.getfqdn
+
+    def get_sshport(self):
+        """Return the host used when configuring SSH access to GitLab."""
+
+        if _get_flag_value("reverseproxy.configured"):
+            return self.charm_config['ssh_port']
+        return '22'
 
     def configure_proxy(self, proxy):
         """Configure GitLab for operation behind a reverse proxy."""
@@ -459,6 +467,7 @@ class GitlabHelper:
                     "redis_port": self.kv.get("redis_port"),
                     "http_port": self.charm_config["http_port"],
                     "ssh_host": self.get_sshhost(),
+                    "ssh_port": self.get_sshport(),
                     "url": self.get_external_uri(),
                 },
             )
@@ -477,6 +486,7 @@ class GitlabHelper:
                     "redis_port": self.kv.get("redis_port"),
                     "http_port": self.charm_config["http_port"],
                     "ssh_host": self.get_sshhost(),
+                    "ssh_port": self.get_sshport(),
                     "url": self.get_external_uri(),
                 },
             )
@@ -495,6 +505,7 @@ class GitlabHelper:
                     "redis_port": self.kv.get("redis_port"),
                     "http_port": self.charm_config["http_port"],
                     "ssh_host": self.get_sshhost(),
+                    "ssh_port": self.get_sshport(),
                     "url": self.get_external_uri(),
                 },
             )

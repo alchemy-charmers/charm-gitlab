@@ -31,6 +31,7 @@ redis['enable'] = false
 ##! HTTP options
 nginx['listen_port'] = "{{ http_port }}"
 gitlab_rails['gitlab_ssh_host'] = "{{ ssh_host }}"
+gitlab_rails['gitlab_shell_ssh_port'] = "{{ ssh_port }}"
 
 ##! Features we don't need
 # letsencrypt is handled by the haproxy charm
