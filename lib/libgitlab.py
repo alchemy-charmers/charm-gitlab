@@ -303,8 +303,9 @@ class GitlabHelper:
         distro = host.get_distrib_codename()
         apt_repo = self.charm_config.get("apt_repo")
         apt_key = self.charm_config.get("apt_key")
-        apt_line = "deb {} {} main".format(
+        apt_line = "deb {} {}/{}/ubuntu main".format(
             apt_repo,
+            self.package_name,
             distro
         )
         hookenv.log(
@@ -361,8 +362,8 @@ class GitlabHelper:
             latest_version = package.version
         if latest_version:
             hookenv.log(
-                "Found latest GitLab version {} for GitLab version {}".format(
-                    latest_version, self.get_installed_version(package)
+                "Found latest GitLab version {}".format(
+                    latest_version
                 )
             )
         else:
@@ -373,7 +374,7 @@ class GitlabHelper:
         """Return the installed GitLab package version."""
         # return False if not installed
         installed_version = False
-        if package.current_ver and "ver_str" in package["current_ver"]:
+        if package and package.current_ver and "ver_str" in package["current_ver"]:
             installed_version = package.current_ver["ver_str"]
         if installed_version:
             hookenv.log(
