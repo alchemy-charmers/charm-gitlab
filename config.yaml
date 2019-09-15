@@ -9,8 +9,8 @@ options:
     description: "The APT signing key used for the repository specified by apt_repo"
   apt_repo:
     type: string
-    default: "https://packages.gitlab.com/gitlab/"
-    description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution (i.e. 'bionic' and the component 'main') will be automatically appended to the provided URI. The package type (gitlab-ce/gitlab-ee) will be appended, as well as /ubuntu/ to the URI portion also. e.g. gitlab-ce/ubuntu bionic main""
+    default: "https://packages.gitlab.com/gitlab"
+    description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution, component, /ubuntu suffix, as well as package type (gitlab-ce/gitlab-ee) will be appended. e.g. gitlab-ce/ubuntu bionic main"
   external_url:
     type: string
     default: ""
@@ -25,5 +25,5 @@ options:
     description: "The external TCP port over which SSH-based git clone operations will be available, when GitLab is related to an external load balancer via the reverseproxy relation. Without a reverseproxy relation, the system sshd is used on port 22."
   package_name:
     type: string
-    default: gitlab-ce
+    default: "gitlab-ce"
     description: "The package to use. Options are gitlab-ce for the FOSS version of gitlab-ee for the Enterprise Edition."

@@ -34,7 +34,8 @@ class GitlabHelper:
     def __init__(self):
         """Load hookenv key/value store and charm configuration."""
         self.charm_config = hookenv.config()
-        self.version = self.charm_config["version"]
+        if self.charm_config["version"]:
+            self.version = self.charm_config["version"]
         self.set_package_name(self.charm_config["package_name"])
         self.kv = unitdata.kv()
 
@@ -303,7 +304,7 @@ class GitlabHelper:
         distro = host.get_distrib_codename()
         apt_repo = self.charm_config.get("apt_repo")
         apt_key = self.charm_config.get("apt_key")
-        apt_line = "deb {} {}/{}/ubuntu main".format(
+        apt_line = "deb {}/{}/ubuntu {} main".format(
             apt_repo,
             self.package_name,
             distro
@@ -381,9 +382,12 @@ class GitlabHelper:
             ["/usr/bin/gitlab-ctl", "reconfigure"], stderr=subprocess.STDOUT
         )
 
-    def upgrade_package(self, version):
+    def upgrade_package(self, version=None):
         """Upgrade GitLab to a specific version given an apt package version or wildcard."""
-        fetch.apt_install("{}={}".format(self.package_name, version), fatal=True)
+        if version:
+            fetch.apt_install("{}={}".format(self.package_name, version), fatal=True)
+        else:
+            fetch.apt_install("{}".format(self.package_name), fatal=True)
 
     def upgrade_gitlab(self):
         """Check if a major version upgrade is being performed and install upgrades in the correct order."""
@@ -392,10 +396,10 @@ class GitlabHelper:
         # we'll also run reconfigure at each step of the upgrade, to make sure migrations are run
         while True:
             package = self.fetch_gitlab_apt_package()
-            if package:
+            installed_version = self.get_installed_version(package)
+            if package and installed_version:
                 desired_version = self.version
                 latest_version = self.get_latest_version(package)
-                installed_version = self.get_installed_version(package)
                 if not desired_version:
                     desired_version = latest_version
                 desired_major = self.get_major_version(desired_version)
@@ -440,10 +444,11 @@ class GitlabHelper:
                     # branch of the logic if necessary, if we are already able to do a simple
                     # upgrade without all this hand-holding, we will go straight there when
                     # upgrade-gitlab is called. Wheeeeeee here we go!
-        else:
-            # not installed
-            hookenv.log("Error getting package information.")
-            return False
+            else:
+                # not installed
+                hookenv.log("GitLab is not installed, installing...")
+                self.upgrade_package()
+                return True
 
     def render_config(self):
         """Render the configuration for GitLab omnibus."""
