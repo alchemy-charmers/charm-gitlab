@@ -398,9 +398,10 @@ class GitlabHelper:
             package = self.fetch_gitlab_apt_package()
             installed_version = self.get_installed_version(package)
             if package and installed_version:
-                desired_version = self.version
                 latest_version = self.get_latest_version(package)
-                if not desired_version:
+                if 'version' in self and self.version:
+                    desired_version = self.version
+                else:
                     desired_version = latest_version
                 desired_major = self.get_major_version(desired_version)
                 installed_major = self.get_major_version(installed_version)
