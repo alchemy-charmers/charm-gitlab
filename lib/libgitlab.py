@@ -319,18 +319,9 @@ class GitlabHelper:
         )
         fetch.apt_update()
 
-    def initial_install(self):
-        """Perform initial installation of GitLab."""
-        self.add_sources()
-        # skip if already installed
-        package = self.gitlab_apt_package()
-        if self.get_installed_version(package):
-            hookenv.log("Skipping initial install for {} because it's already installed".format(self.package_name))
-        else:
-            fetch.apt_install("{}".format(self.package_name), fatal=True)
-
-    def gitlab_apt_package(self):
+    def fetch_gitlab_apt_package(self):
         """Return reference to GitLab package information in the APT cache."""
+        self.add_sources()
         fetch.apt_update()
         apt_cache = ubuntu_apt_pkg.Cache()
         hookenv.log("Fetching package information for {}".format(self.package_name))
@@ -400,7 +391,7 @@ class GitlabHelper:
         # loop until we're at the right version, stepping through major versions as needed
         # we'll also run reconfigure at each step of the upgrade, to make sure migrations are run
         while True:
-            package = self.gitlab_apt_package()
+            package = self.fetch_gitlab_apt_package()
             if package:
                 desired_version = self.version
                 latest_version = self.get_latest_version(package)

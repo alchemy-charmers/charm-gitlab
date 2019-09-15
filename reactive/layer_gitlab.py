@@ -69,7 +69,7 @@ def remove_proxy():
 def install_gitlab():
     """Installs GitLab based on configured version."""
     hookenv.status_set("maintenance", "Installing GitLab")
-    gitlab.initial_install()
+    gitlab.upgrade_gitlab()
     hookenv.status_set("active", "GitLab Installed")
     set_flag("gitlab.installed")
 
