@@ -93,4 +93,4 @@ This charm is written by James Hebden of the Pirate Charmers group.
   - administrative password management via juju config
   - specify option to pass hostname over reverseproxy relation
   - specify option to override address used for reverseproxy
-  - specify option to install CE or EE versions of GitLab
+  - interface for relating GitLab CI runners (WIP)
