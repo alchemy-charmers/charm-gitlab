@@ -28,18 +28,21 @@ class GitlabHelper:
     charm. Used and called from the Reactive charm layer and unit tests.
     """
 
-    package_name = "gitlab-ee"
+    package_name = "gitlab-ce"
     gitlab_config = "/etc/gitlab/gitlab.rb"
 
     def __init__(self):
         """Load hookenv key/value store and charm configuration."""
         self.charm_config = hookenv.config()
         self.version = self.charm_config["version"]
+        self.set_package_name(self.charm_config["package_name"])
         self.kv = unitdata.kv()
 
-    def action_function(self):
-        """Stub function for the example action."""
-        return True
+    def set_package_name(self, name):
+        """Parse and set the package name used to install and upgrade GitLab."""
+        if name == "gitlab-ee":
+            self.package_name = "gitlab-ee"
+        self.package_name = "gitlab-ce"
 
     def restart(self):
         """Restart the GitLab service."""

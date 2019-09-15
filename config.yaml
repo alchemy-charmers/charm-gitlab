@@ -23,3 +23,7 @@ options:
     type: int
     default: 222
     description: "The external TCP port over which SSH-based git clone operations will be available, when GitLab is related to an external load balancer via the reverseproxy relation. Without a reverseproxy relation, the system sshd is used on port 22."
+  package_name:
+    type: string
+    default: gitlab-ce
+    description: "The package to use. Options are gitlab-ce for the FOSS version of gitlab-ee for the Enterprise Edition."
