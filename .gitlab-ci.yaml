@@ -5,6 +5,9 @@ stages:
 
 lint:
   stage: lint
+  tags:
+    - docker
+  image: python:3.6
   script:
     - tox -e lint
     - tox -e lintjunit
@@ -16,6 +19,9 @@ lint:
 
 unit:
   stage: unit
+  tags:
+    - docker
+  image: python:3.6
   script:
     - tox -e unit
   artefacts:
@@ -26,6 +32,9 @@ unit:
 
 functional:
   stage: functional
+  tags:
+    - docker
+  image: python:3.6
   script:
     - tox -e functional
   artefacts:
