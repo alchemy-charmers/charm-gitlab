@@ -4,38 +4,24 @@ image: 'python:3.6'
 stages:
   - test
 
-lint:
+before_script:
+  - python --version
+  - pip install tox
+  - mkdir -p report/lint
+  - mkdir -p report/unit
+
+flake8:
   stage: test
   script:
-    - mkdir -p report/lint
-    - pip install tox
-    - tox -e lintjunit
+    - tox -e lint
   artifacts:
     paths:
       - report/lint
-    reports:
-      junit: report/lint/junit.xml
 
-unit:
+pytest:
   stage: test 
   script:
-    - mkdir -p report/unit
-    - pip install tox
     - tox -e unit
   artifacts:
     paths:
       - report/unit
-    reports:
-      junit: report/unit/junit.xml
-
-functional:
-  stage: test
-  script:
-    - mkdir -p report/functional
-    - pip install tox
-    - tox -e functional
-  artifacts:
-    paths:
-      - report/functional
-    reports:
-      junit: report/functional/junit.xml
