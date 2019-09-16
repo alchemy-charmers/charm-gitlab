@@ -2,12 +2,10 @@
 image: 'python:3.6'
 
 stages:
-  - lint
-  - unit
-  - functional
+  - test
 
 lint:
-  stage: lint
+  stage: test
   script:
     - tox -e lint
     - tox -e lintjunit
@@ -18,7 +16,7 @@ lint:
       junit: report/lint/junit.xml
 
 unit:
-  stage: unit
+  stage: test 
   script:
     - tox -e unit
   artifacts:
@@ -28,7 +26,7 @@ unit:
       junit: report/unit/junit.xml
 
 functional:
-  stage: functional
+  stage: test
   script:
     - tox -e functional
   artifacts:
