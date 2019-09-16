@@ -1,3 +1,6 @@
+[![pipeline status](https://git.ec0.io/pirate-charmers/charm-gitlab/badges/master/pipeline.svg)](https://git.ec0.io/pirate-charmers/charm-gitlab/commits/master)
+[![coverage report](https://git.ec0.io/pirate-charmers/charm-gitlab/badges/master/coverage.svg)](https://git.ec0.io/pirate-charmers/charm-gitlab/commits/master)
+
 # GitLab 
 
 This charm provides the [GitLab](https://gitlab.com) code hosting and CI/CD platform, for use with MySQL as a backend database.
