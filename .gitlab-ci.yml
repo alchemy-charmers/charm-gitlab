@@ -9,7 +9,6 @@ lint:
   script:
     - mkdir -p report/lint
     - pip install tox
-    - tox -e lint
     - tox -e lintjunit
   artifacts:
     paths:
