@@ -7,6 +7,7 @@ stages:
 lint:
   stage: test
   script:
+    - mkdir -p report/lint
     - pip install tox
     - tox -e lint
     - tox -e lintjunit
@@ -19,6 +20,7 @@ lint:
 unit:
   stage: test 
   script:
+    - mkdir -p report/unit
     - pip install tox
     - tox -e unit
   artifacts:
@@ -30,6 +32,7 @@ unit:
 functional:
   stage: test
   script:
+    - mkdir -p report/functional
     - pip install tox
     - tox -e functional
   artifacts:
