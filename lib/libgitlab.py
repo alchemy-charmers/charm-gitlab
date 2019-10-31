@@ -72,7 +72,6 @@ class GitlabHelper:
 
     def get_sshport(self):
         """Return the host used when configuring SSH access to GitLab."""
-
         if _get_flag_value("reverseproxy.configured"):
             return self.charm_config['ssh_port']
         return '22'
