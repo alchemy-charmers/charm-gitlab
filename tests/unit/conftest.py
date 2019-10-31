@@ -61,6 +61,7 @@ def mock_charm_dir(monkeypatch):
 
 @pytest.fixture
 def mock_get_installed_version(monkeypatch):
+    """Mock the installed version."""
     installed_version = mock.Mock()
     installed_version.return_value = "1.1.1"
     monkeypatch.setattr(
@@ -70,6 +71,7 @@ def mock_get_installed_version(monkeypatch):
 
 @pytest.fixture
 def mock_get_latest_version(monkeypatch):
+    """Mock get_latest_version."""
     latest_version = mock.Mock()
     latest_version.return_value = "1.1.1"
     monkeypatch.setattr("libgitlab.GitlabHelper.get_latest_version", latest_version)
@@ -79,8 +81,10 @@ def mock_get_latest_version(monkeypatch):
 def mock_upgrade_package(
     mock_get_installed_version, mock_get_latest_version, monkeypatch
 ):
-    """ Mock the upgrade_package function and set the installed versions. When a
-    wildcard is provided the minor and patch are set to 1"""
+    """Mock the upgrade_package function and set the installed versions.
+
+    When a wildcard is provided the minor and patch are set to 1
+    """
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -93,6 +97,7 @@ def mock_upgrade_package(
 
 @pytest.fixture
 def mock_gitlab_hookenv_log(monkeypatch):
+    """Mock hookenv.log."""
     mock_log = mock.Mock()
     monkeypatch.setattr("libgitlab.hookenv.log", mock_log)
     return mock_log

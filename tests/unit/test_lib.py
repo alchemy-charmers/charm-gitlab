@@ -1,9 +1,8 @@
 #!/usr/bin/python3
-
-from mock import call
-
 """Test helper library usage."""
+
 from charmhelpers.core import unitdata
+from mock import call
 
 
 def test_pytest():
@@ -22,13 +21,13 @@ def test_gitlab_kv(libgitlab):
 
 
 def test_upgrade_gitlab_noop(libgitlab):
-    """ Test the noop path """
+    """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
     assert result is False
 
 
 def test_upgrade_gitlab_minor(libgitlab, mock_gitlab_hookenv_log):
-    """ Test the upgrade path """
+    """Test the upgrade path."""
     # Upgrade to new minor version
     libgitlab.get_installed_version.return_value = "1.1.0"
     result = libgitlab.upgrade_gitlab()
@@ -53,7 +52,7 @@ def test_upgrade_gitlab_minor(libgitlab, mock_gitlab_hookenv_log):
 
 
 def test_upgrade_gitlab_major(libgitlab, mock_gitlab_hookenv_log):
-    """ Test the upgrade path """
+    """Test the upgrade path."""
     libgitlab.get_installed_version.return_value = "0.0.0"
     result = libgitlab.upgrade_gitlab()
     print(mock_gitlab_hookenv_log.call_args_list)
@@ -73,7 +72,7 @@ def test_upgrade_gitlab_major(libgitlab, mock_gitlab_hookenv_log):
 
 
 def test_upgrade_gitlab_install(libgitlab, mock_gitlab_hookenv_log):
-    """ Test the upgrade path """
+    """Test the upgrade path."""
     libgitlab.get_installed_version.return_value = ""
     result = libgitlab.upgrade_gitlab()
     print(mock_gitlab_hookenv_log.call_args_list)
