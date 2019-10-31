@@ -36,6 +36,8 @@ class GitlabHelper:
         self.charm_config = hookenv.config()
         if self.charm_config["version"]:
             self.version = self.charm_config["version"]
+        else:
+            self.version = None
         self.set_package_name(self.charm_config["package_name"])
         self.kv = unitdata.kv()
 
@@ -399,7 +401,7 @@ class GitlabHelper:
             installed_version = self.get_installed_version(package)
             if package and installed_version:
                 latest_version = self.get_latest_version(package)
-                if 'version' in self and self.version:
+                if self.version:
                     desired_version = self.version
                 else:
                     desired_version = latest_version
