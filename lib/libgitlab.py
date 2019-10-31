@@ -393,13 +393,14 @@ class GitlabHelper:
         hookenv.log("Processing pending package upgrades for GitLab")
         # loop until we're at the right version, stepping through major versions as needed
         # we'll also run reconfigure at each step of the upgrade, to make sure migrations are run
+        major_upgrade = False
         while True:
             package = self.fetch_gitlab_apt_package()
             installed_version = self.get_installed_version(package)
             if package and installed_version:
                 latest_version = self.get_latest_version(package)
-                if 'version' in self and self.version:
-                    desired_version = self.version
+                if self.charm_config["version"]:
+                    desired_version = self.charm_config["version"]
                 else:
                     desired_version = latest_version
                 desired_major = self.get_major_version(desired_version)
@@ -411,6 +412,10 @@ class GitlabHelper:
                             desired_version
                         )
                     )
+                    if major_upgrade:
+                        # Return True if we have been through a major upgrade
+                        # already
+                        return True
                     return False
                 elif desired_major == installed_major:
                     hookenv.log(
@@ -439,6 +444,7 @@ class GitlabHelper:
                     )
                     self.upgrade_package("{}.*".format(next_major))
                     self.gitlab_reconfigure_run()
+                    major_upgrade = True
                     # we will loop here by default, to finish up the next upgrade steps
                     # looping means that we will only get into more complex checking in this
                     # branch of the logic if necessary, if we are already able to do a simple
