@@ -134,6 +134,13 @@ def test_legacy_db_configured(libgitlab):
     assert libgitlab.legacy_db_configured() is True
 
 
+def test_install_pglodaer(libgitlab, mock_gitlab_fetch):
+    "Test install_pgloader."
+    libgitlab.install_pgloader()
+    assert mock_gitlab_fetch.apt_install.called
+    assert mock_gitlab_fetch.apt_install.call_args == call("pgloader", fatal=True)
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()

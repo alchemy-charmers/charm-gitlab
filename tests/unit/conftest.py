@@ -132,12 +132,21 @@ def mock_gitlab_socket(monkeypatch):
 
 
 @pytest.fixture
+def mock_gitlab_fetch(monkeypatch):
+    """Mock fetch import on libgitlab."""
+    mock_fetch = mock.Mock()
+    monkeypatch.setattr("libgitlab.fetch", mock_fetch)
+    return mock_fetch
+
+
+@pytest.fixture
 def libgitlab(
     tmpdir,
     mock_hookenv_config,
     mock_charm_dir,
     mock_upgrade_package,
     mock_gitlab_socket,
+    mock_gitlab_fetch,
     monkeypatch,
 ):
     """Mock important aspects of the charm helper library for operation during unit testing."""
