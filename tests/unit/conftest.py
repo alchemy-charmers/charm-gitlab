@@ -156,6 +156,13 @@ def mock_template(monkeypatch):
 
 
 @pytest.fixture
+def mock_unit_db(monkeypatch):
+    mock_kv = mock.Mock()
+    mock_kv.return_value = unitdata.Storage(path=":memory:")
+    monkeypatch.setattr("libgitlab.unitdata.kv", mock_kv)
+
+
+@pytest.fixture
 def libgitlab(
     tmpdir,
     mock_hookenv_config,
@@ -165,6 +172,7 @@ def libgitlab(
     mock_gitlab_fetch,
     mock_template,
     mock_gitlab_subprocess,
+    mock_unit_db,
     monkeypatch,
 ):
     """Mock important aspects of the charm helper library for operation during unit testing."""
@@ -186,9 +194,6 @@ def libgitlab(
     # Mock host functions not appropriate for unit testing
     gitlab.fetch_gitlab_apt_package = mock.Mock()
     gitlab.gitlab_reconfigure_run = mock.Mock()
-
-    # In-memory kv
-    gitlab.kv = unitdata.Storage(path=':memory:')
 
     # Any other functions that load the helper will get this version
     monkeypatch.setattr("libgitlab.GitlabHelper", lambda: gitlab)
