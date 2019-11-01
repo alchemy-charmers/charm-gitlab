@@ -45,7 +45,8 @@ class GitlabHelper:
         """Parse and set the package name used to install and upgrade GitLab."""
         if name == "gitlab-ee":
             self.package_name = "gitlab-ee"
-        self.package_name = "gitlab-ce"
+        else:
+            self.package_name = "gitlab-ce"
 
     def restart(self):
         """Restart the GitLab service."""

@@ -20,6 +20,14 @@ def test_gitlab_kv(libgitlab):
     assert isinstance(libgitlab.kv, unitdata.Storage)
 
 
+def test_set_package_name(libgitlab):
+    "Test set_package_name"
+    libgitlab.set_package_name("not-ee")
+    assert libgitlab.package_name == "gitlab-ce"
+    libgitlab.set_package_name("gitlab-ee")
+    assert libgitlab.package_name == "gitlab-ee"
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
