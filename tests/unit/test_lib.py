@@ -53,6 +53,15 @@ def test_get_sshhost(libgitlab):
     assert result == "mock.example.com"
 
 
+def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
+    "Test get_sshport."
+    result = libgitlab.get_sshport()
+    assert result == "22"
+    mock_gitlab_get_flag_value.return_value = True
+    result = libgitlab.get_sshport()
+    assert result == libgitlab.charm_config['ssh_port']
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()

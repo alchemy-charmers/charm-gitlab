@@ -113,6 +113,15 @@ def mock_gitlab_host(monkeypatch):
 
 
 @pytest.fixture
+def mock_gitlab_get_flag_value(monkeypatch):
+    """Mock _get_flag_value on libgitlab."""
+    mock_flag_value = mock.Mock()
+    mock_flag_value.return_value = None
+    monkeypatch.setattr("libgitlab._get_flag_value", mock_flag_value)
+    return mock_flag_value
+
+
+@pytest.fixture
 def mock_gitlab_socket(monkeypatch):
     """Mock socket import on libgitlab."""
     mock_socket = mock.Mock()
