@@ -255,6 +255,24 @@ def test_remove_pgsql_conf(libgitlab):
     assert not libgitlab.kv.get("db_user", None)
 
 
+def test_save_pgsql_conf(libgitlab):
+    "Test save_pgsql_conf."
+    db = mock.Mock()
+    master = mock.Mock()
+    master.host = "host"
+    master.port = "port"
+    master.dbname = "dbname"
+    master.user = "user"
+    master.password = "password"
+    db.master = master
+    libgitlab.save_pgsql_conf(db)
+    assert libgitlab.kv.get("pgsql_host") == "host"
+    assert libgitlab.kv.get("pgsql_port") == "port"
+    assert libgitlab.kv.get("pgsql_db") == "dbname"
+    assert libgitlab.kv.get("pgsql_user") == "user"
+    assert libgitlab.kv.get("pgsql_pass") == "password"
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
