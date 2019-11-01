@@ -227,6 +227,20 @@ def test_redis_configured(libgitlab):
     assert libgitlab.redis_configured()
 
 
+def test_remove_mysql_conf(libgitlab):
+    "Test remove_mysql_conf."
+    libgitlab.kv.set("mysql_host", "mysql_host")
+    libgitlab.kv.set("mysql_port", "mysql_port")
+    libgitlab.kv.set("mysql_db", "mysql_db")
+    libgitlab.kv.set("mysql_user", "mysql_user")
+    libgitlab.kv.set("mysql_pass", "mysql_pass")
+    libgitlab.remove_mysql_conf()
+    assert not libgitlab.kv.get("mysql_host", None)
+    assert not libgitlab.kv.get("mysql_port", None)
+    assert not libgitlab.kv.get("mysql_db", None)
+    assert not libgitlab.kv.get("mysql_user", None)
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
