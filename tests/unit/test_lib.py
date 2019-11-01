@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """Test helper library usage."""
 
+import mock
+
 from charmhelpers.core import unitdata
 from mock import call
 
@@ -59,7 +61,55 @@ def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
     assert result == "22"
     mock_gitlab_get_flag_value.return_value = True
     result = libgitlab.get_sshport()
-    assert result == libgitlab.charm_config['ssh_port']
+    assert result == libgitlab.charm_config["ssh_port"]
+
+
+def test_configure_proxy(libgitlab):
+    "Test configure_proxy"
+    # Test HTTP
+    mock_proxy = mock.Mock()
+    libgitlab.configure_proxy(mock_proxy)
+    assert mock_proxy.configure.called
+    assert mock_proxy.configure.call_args == call(
+        [
+            {
+                "mode": "http",
+                "external_port": 80,
+                "internal_host": "mock.example.com",
+                "internal_port": 80,
+                "subdomain": "mock.example.com",
+            },
+            {
+                "mode": "tcp",
+                "external_port": 222,
+                "internal_host": "mock.example.com",
+                "internal_port": 22,
+            },
+        ]
+    )
+
+    # Test HTTPS
+    mock_proxy.reset_mock()
+    libgitlab.charm_config['external_url'] = "https://mock.example.com"
+    libgitlab.configure_proxy(mock_proxy)
+    assert mock_proxy.configure.called
+    assert mock_proxy.configure.call_args == call(
+        [
+            {
+                "mode": "http",
+                "external_port": 443,
+                "internal_host": "mock.example.com",
+                "internal_port": 80,
+                "subdomain": "mock.example.com",
+            },
+            {
+                "mode": "tcp",
+                "external_port": 222,
+                "internal_host": "mock.example.com",
+                "internal_port": 22,
+            },
+        ]
+    )
 
 
 def test_upgrade_gitlab_noop(libgitlab):
