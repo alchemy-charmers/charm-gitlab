@@ -163,6 +163,13 @@ def test_configure_pgloader(libgitlab):
     assert b"ALTER SCHEMA 'mysql_db' RENAME TO 'public'\n" in content
 
 
+def test_mysql_migrated(libgitlab):
+    "Test mysql_migrated."
+    assert libgitlab.mysql_migrated() is False
+    libgitlab.kv.set("mysql_migration_run", True)
+    assert libgitlab.mysql_migrated() is True
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
