@@ -115,12 +115,23 @@ def test_configure_proxy(libgitlab):
 def test_mysql_configured(libgitlab):
     "Test mysql_configured"
     assert libgitlab.mysql_configured() is False
-    libgitlab.kv.set('mysql_host', 'mock')
-    libgitlab.kv.set('mysql_port', 'mock')
-    libgitlab.kv.set('mysql_db', 'mock')
-    libgitlab.kv.set('mysql_user', 'mock')
-    libgitlab.kv.set('mysql_pass', 'mock')
+    libgitlab.kv.set("mysql_host", "mock")
+    libgitlab.kv.set("mysql_port", "mock")
+    libgitlab.kv.set("mysql_db", "mock")
+    libgitlab.kv.set("mysql_user", "mock")
+    libgitlab.kv.set("mysql_pass", "mock")
     assert libgitlab.mysql_configured() is True
+
+
+def test_legacy_db_configured(libgitlab):
+    "Test legacy_db_configured."
+    assert libgitlab.legacy_db_configured() is False
+    libgitlab.kv.set("db_host", "mock")
+    libgitlab.kv.set("db_port", "mock")
+    libgitlab.kv.set("db_db", "mock")
+    libgitlab.kv.set("db_user", "mock")
+    libgitlab.kv.set("db_pass", "mock")
+    assert libgitlab.legacy_db_configured() is True
 
 
 def test_upgrade_gitlab_noop(libgitlab):
