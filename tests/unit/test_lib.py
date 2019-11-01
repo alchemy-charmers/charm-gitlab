@@ -241,6 +241,20 @@ def test_remove_mysql_conf(libgitlab):
     assert not libgitlab.kv.get("mysql_user", None)
 
 
+def test_remove_pgsql_conf(libgitlab):
+    "Test remove pgsql_conf."
+    libgitlab.kv.set("db_host", "db_host")
+    libgitlab.kv.set("db_port", "db_port")
+    libgitlab.kv.set("db_db", "db_db")
+    libgitlab.kv.set("db_user", "db_user")
+    libgitlab.kv.set("db_pass", "db_pass")
+    libgitlab.remove_pgsql_conf()
+    assert not libgitlab.kv.get("db_host", None)
+    assert not libgitlab.kv.get("db_port", None)
+    assert not libgitlab.kv.get("db_db", None)
+    assert not libgitlab.kv.get("db_user", None)
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
