@@ -69,7 +69,7 @@ class GitlabHelper:
         if url.hostname:
             return url.hostname
         else:
-            return socket.getfqdn
+            return socket.getfqdn()
 
     def get_sshport(self):
         """Return the host used when configuring SSH access to GitLab."""

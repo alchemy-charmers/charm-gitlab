@@ -44,6 +44,15 @@ def test_get_external_uri(libgitlab):
     assert result == "foo.bar.com"
 
 
+def test_get_sshhost(libgitlab):
+    "Test get_sshhost."
+    result = libgitlab.get_sshhost()
+    assert result == "mock.example.com"
+    libgitlab.charm_config["external_url"] = "foo.bar.com"
+    result = libgitlab.get_sshhost()
+    assert result == "mock.example.com"
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
