@@ -304,6 +304,17 @@ def test_save_redis_conf(libgitlab):
     assert not libgitlab.kv.get("redis_pass")
 
 
+def test_remove_redis_conf(libgitlab):
+    "Test remove_redis_conf."
+    libgitlab.kv.set("redis_host", "mock")
+    libgitlab.kv.set("redis_port", "mock")
+    libgitlab.kv.set("redis_pass", "mock")
+    libgitlab.remove_redis_conf()
+    assert not libgitlab.kv.get("redis_host")
+    assert not libgitlab.kv.get("redis_port")
+    assert not libgitlab.kv.get("redis_pass")
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
