@@ -289,6 +289,21 @@ def test_save_mysql_conf(libgitlab):
     assert libgitlab.kv.get("mysql_pass") == "password"
 
 
+def test_save_redis_conf(libgitlab):
+    "Test save_redis_conf."
+    endpoint = mock.Mock()
+    mock_redis = mock.Mock()
+    mock_redis.get.return_value = "mock value"
+    endpoint.relation_data.return_value = [mock_redis]
+    libgitlab.save_redis_conf(endpoint)
+    assert libgitlab.kv.get("redis_host") == "mock value"
+    assert libgitlab.kv.get("redis_port") == "mock value"
+    assert libgitlab.kv.get("redis_pass") == "mock value"
+    mock_redis.get.return_value = None
+    libgitlab.save_redis_conf(endpoint)
+    assert not libgitlab.kv.get("redis_pass")
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
