@@ -4,6 +4,7 @@ import mock
 
 import pytest
 
+from charmhelpers.core import unitdata
 
 # If layer options are used, add this to libgitlab
 # and import layer in libgitlab
@@ -56,7 +57,7 @@ def mock_remote_unit(monkeypatch):
 @pytest.fixture
 def mock_charm_dir(monkeypatch):
     """Mock the charm directory for charm in test."""
-    monkeypatch.setattr("libgitlab.hookenv.charm_dir", lambda: "/mock/charm/dir")
+    monkeypatch.setattr("libgitlab.hookenv.charm_dir", lambda: ".")
 
 
 @pytest.fixture
@@ -85,6 +86,7 @@ def mock_upgrade_package(
 
     When a wildcard is provided the minor and patch are set to 1
     """
+
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -104,8 +106,74 @@ def mock_gitlab_hookenv_log(monkeypatch):
 
 
 @pytest.fixture
+def mock_gitlab_host(monkeypatch):
+    """Mock host import on libgitlab."""
+    mock_host = mock.Mock()
+    monkeypatch.setattr("libgitlab.host", mock_host)
+    return mock_host
+
+
+@pytest.fixture
+def mock_gitlab_get_flag_value(monkeypatch):
+    """Mock _get_flag_value on libgitlab."""
+    mock_flag_value = mock.Mock()
+    mock_flag_value.return_value = None
+    monkeypatch.setattr("libgitlab._get_flag_value", mock_flag_value)
+    return mock_flag_value
+
+
+@pytest.fixture
+def mock_gitlab_socket(monkeypatch):
+    """Mock socket import on libgitlab."""
+    mock_socket = mock.Mock()
+    mock_socket.getfqdn = mock.Mock()
+    mock_socket.getfqdn.return_value = "mock.example.com"
+    monkeypatch.setattr("libgitlab.socket", mock_socket)
+    return mock_socket
+
+
+@pytest.fixture
+def mock_gitlab_fetch(monkeypatch):
+    """Mock fetch import on libgitlab."""
+    mock_fetch = mock.Mock()
+    monkeypatch.setattr("libgitlab.fetch", mock_fetch)
+    return mock_fetch
+
+
+@pytest.fixture
+def mock_gitlab_subprocess(monkeypatch):
+    """Mock subprocess import on libgitlab."""
+    mock_subprocess = mock.Mock()
+    monkeypatch.setattr("libgitlab.subprocess", mock_subprocess)
+    return mock_subprocess
+
+
+@pytest.fixture
+def mock_template(monkeypatch):
+    monkeypatch.setattr("libgitlab.templating.host.os.fchown", mock.Mock())
+    monkeypatch.setattr("libgitlab.templating.host.os.chown", mock.Mock())
+    monkeypatch.setattr("libgitlab.templating.host.os.fchmod", mock.Mock())
+
+
+@pytest.fixture
+def mock_unit_db(monkeypatch):
+    mock_kv = mock.Mock()
+    mock_kv.return_value = unitdata.Storage(path=":memory:")
+    monkeypatch.setattr("libgitlab.unitdata.kv", mock_kv)
+
+
+@pytest.fixture
 def libgitlab(
-    tmpdir, mock_hookenv_config, mock_charm_dir, mock_upgrade_package, monkeypatch
+    tmpdir,
+    mock_hookenv_config,
+    mock_charm_dir,
+    mock_upgrade_package,
+    mock_gitlab_socket,
+    mock_gitlab_fetch,
+    mock_template,
+    mock_gitlab_subprocess,
+    mock_unit_db,
+    monkeypatch,
 ):
     """Mock important aspects of the charm helper library for operation during unit testing."""
     from libgitlab import GitlabHelper
@@ -117,6 +185,11 @@ def libgitlab(
     with open("./tests/unit/example.cfg", "r") as src_file:
         cfg_file.write(src_file.read())
     gitlab.example_config_file = cfg_file.strpath
+
+    commands_file = tmpdir.join("commands.load")
+    gitlab.gitlab_commands_file = commands_file.strpath
+    config_file = tmpdir.join("gitlab.rb")
+    gitlab.gitlab_config = config_file.strpath
 
     # Mock host functions not appropriate for unit testing
     gitlab.fetch_gitlab_apt_package = mock.Mock()
