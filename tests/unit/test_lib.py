@@ -28,6 +28,13 @@ def test_set_package_name(libgitlab):
     assert libgitlab.package_name == "gitlab-ee"
 
 
+def test_restart(libgitlab, mock_gitlab_host):
+    "Test restart"
+    libgitlab.restart()
+    assert mock_gitlab_host.service_restart.called
+    assert mock_gitlab_host.service_restart.call_args == call('gitlab')
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()

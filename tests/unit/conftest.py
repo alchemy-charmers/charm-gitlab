@@ -85,6 +85,7 @@ def mock_upgrade_package(
 
     When a wildcard is provided the minor and patch are set to 1
     """
+
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -101,6 +102,14 @@ def mock_gitlab_hookenv_log(monkeypatch):
     mock_log = mock.Mock()
     monkeypatch.setattr("libgitlab.hookenv.log", mock_log)
     return mock_log
+
+
+@pytest.fixture
+def mock_gitlab_host(monkeypatch):
+    """Mock host import on libgitlab."""
+    mock_host = mock.Mock()
+    monkeypatch.setattr("libgitlab.host", mock_host)
+    return mock_host
 
 
 @pytest.fixture
