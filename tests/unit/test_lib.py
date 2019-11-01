@@ -32,7 +32,16 @@ def test_restart(libgitlab, mock_gitlab_host):
     "Test restart"
     libgitlab.restart()
     assert mock_gitlab_host.service_restart.called
-    assert mock_gitlab_host.service_restart.call_args == call('gitlab')
+    assert mock_gitlab_host.service_restart.call_args == call("gitlab")
+
+
+def test_get_external_uri(libgitlab):
+    "Test get_external_uri"
+    result = libgitlab.get_external_uri()
+    assert result == "http://mock.example.com"
+    libgitlab.charm_config["external_url"] = "foo.bar.com"
+    result = libgitlab.get_external_uri()
+    assert result == "foo.bar.com"
 
 
 def test_upgrade_gitlab_noop(libgitlab):

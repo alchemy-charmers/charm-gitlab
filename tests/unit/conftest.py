@@ -113,8 +113,23 @@ def mock_gitlab_host(monkeypatch):
 
 
 @pytest.fixture
+def mock_gitlab_socket(monkeypatch):
+    """Mock socket import on libgitlab."""
+    mock_socket = mock.Mock()
+    mock_socket.getfqdn = mock.Mock()
+    mock_socket.getfqdn.return_value = "mock.example.com"
+    monkeypatch.setattr("libgitlab.socket", mock_socket)
+    return mock_socket
+
+
+@pytest.fixture
 def libgitlab(
-    tmpdir, mock_hookenv_config, mock_charm_dir, mock_upgrade_package, monkeypatch
+    tmpdir,
+    mock_hookenv_config,
+    mock_charm_dir,
+    mock_upgrade_package,
+    mock_gitlab_socket,
+    monkeypatch,
 ):
     """Mock important aspects of the charm helper library for operation during unit testing."""
     from libgitlab import GitlabHelper
