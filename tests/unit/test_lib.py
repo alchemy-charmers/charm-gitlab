@@ -219,6 +219,14 @@ def test_migrate_mysql_config(libgitlab):
     assert libgitlab.kv.get("db_host") == "mysql_host"
 
 
+def test_redis_configured(libgitlab):
+    "Test redis_configured."
+    assert not libgitlab.redis_configured()
+    libgitlab.kv.set("redis_host", "redis_host")
+    libgitlab.kv.set("redis_port", "redis_port")
+    assert libgitlab.redis_configured()
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
