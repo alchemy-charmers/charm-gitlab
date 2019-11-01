@@ -273,6 +273,22 @@ def test_save_pgsql_conf(libgitlab):
     assert libgitlab.kv.get("pgsql_pass") == "password"
 
 
+def test_save_mysql_conf(libgitlab):
+    "Test save_mysql_conf."
+    db = mock.Mock()
+    db.host.return_value = "host"
+    db.port.return_value = "port"
+    db.database.return_value = "dbname"
+    db.user.return_value = "user"
+    db.password.return_value = "password"
+    libgitlab.save_mysql_conf(db)
+    assert libgitlab.kv.get("mysql_host") == "host"
+    assert libgitlab.kv.get("mysql_port") == "port"
+    assert libgitlab.kv.get("mysql_db") == "dbname"
+    assert libgitlab.kv.get("mysql_user") == "user"
+    assert libgitlab.kv.get("mysql_pass") == "password"
+
+
 def test_upgrade_gitlab_noop(libgitlab):
     """Test the noop path."""
     result = libgitlab.upgrade_gitlab()
