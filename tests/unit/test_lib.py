@@ -23,7 +23,7 @@ def test_gitlab_kv(libgitlab):
 
 
 def test_set_package_name(libgitlab):
-    "Test set_package_name"
+    """Test set_package_name."""
     libgitlab.set_package_name("not-ee")
     assert libgitlab.package_name == "gitlab-ce"
     libgitlab.set_package_name("gitlab-ee")
@@ -31,14 +31,14 @@ def test_set_package_name(libgitlab):
 
 
 def test_restart(libgitlab, mock_gitlab_host):
-    "Test restart"
+    """Test restart."""
     libgitlab.restart()
     assert mock_gitlab_host.service_restart.called
     assert mock_gitlab_host.service_restart.call_args == call("gitlab")
 
 
 def test_get_external_uri(libgitlab):
-    "Test get_external_uri"
+    """Test get_external_uri."""
     result = libgitlab.get_external_uri()
     assert result == "http://mock.example.com"
     libgitlab.charm_config["external_url"] = "foo.bar.com"
@@ -47,7 +47,7 @@ def test_get_external_uri(libgitlab):
 
 
 def test_get_sshhost(libgitlab):
-    "Test get_sshhost."
+    """Test get_sshhost."""
     result = libgitlab.get_sshhost()
     assert result == "mock.example.com"
     libgitlab.charm_config["external_url"] = "foo.bar.com"
@@ -56,7 +56,7 @@ def test_get_sshhost(libgitlab):
 
 
 def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
-    "Test get_sshport."
+    """Test get_sshport."""
     result = libgitlab.get_sshport()
     assert result == "22"
     mock_gitlab_get_flag_value.return_value = True
@@ -65,7 +65,7 @@ def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
 
 
 def test_configure_proxy(libgitlab):
-    "Test configure_proxy"
+    """Test configure_proxy."""
     # Test HTTP
     mock_proxy = mock.Mock()
     libgitlab.configure_proxy(mock_proxy)
@@ -113,7 +113,7 @@ def test_configure_proxy(libgitlab):
 
 
 def test_mysql_configured(libgitlab):
-    "Test mysql_configured"
+    """Test mysql_configured."""
     assert libgitlab.mysql_configured() is False
     libgitlab.kv.set("mysql_host", "mysql_host")
     libgitlab.kv.set("mysql_port", "mysql_port")
@@ -124,7 +124,7 @@ def test_mysql_configured(libgitlab):
 
 
 def test_legacy_db_configured(libgitlab):
-    "Test legacy_db_configured."
+    """Test legacy_db_configured."""
     assert libgitlab.legacy_db_configured() is False
     libgitlab.kv.set("db_host", "db_host")
     libgitlab.kv.set("db_port", "db_port")
@@ -135,14 +135,14 @@ def test_legacy_db_configured(libgitlab):
 
 
 def test_install_pglodaer(libgitlab, mock_gitlab_fetch):
-    "Test install_pgloader."
+    """Test install_pgloader."""
     libgitlab.install_pgloader()
     assert mock_gitlab_fetch.apt_install.called
     assert mock_gitlab_fetch.apt_install.call_args == call("pgloader", fatal=True)
 
 
 def test_configure_pgloader(libgitlab):
-    "Test configure_pgloader."
+    """Test configure_pgloader."""
     libgitlab.kv.set("mysql_host", "mysql_host")
     libgitlab.kv.set("mysql_port", "mysql_port")
     libgitlab.kv.set("mysql_db", "mysql_db")
@@ -170,14 +170,14 @@ def test_configure_pgloader(libgitlab):
 
 
 def test_mysql_migrated(libgitlab):
-    "Test mysql_migrated."
+    """Test mysql_migrated."""
     assert libgitlab.mysql_migrated() is False
     libgitlab.kv.set("mysql_migration_run", True)
     assert libgitlab.mysql_migrated() is True
 
 
 def test_migrate_db(libgitlab):
-    "Test migrate_db."
+    """Test migrate_db."""
     # No migration
     libgitlab.install_pgloader = mock.Mock()
     libgitlab.configure_pgloader = mock.Mock()
@@ -208,7 +208,7 @@ def test_migrate_db(libgitlab):
 
 
 def test_migrate_mysql_config(libgitlab):
-    "Test migrate_mysql_config."
+    """Test migrate_mysql_config."""
     assert not libgitlab.kv.get("db_host", None)
     libgitlab.kv.set("mysql_host", "mysql_host")
     libgitlab.kv.set("mysql_port", "mysql_port")
@@ -220,7 +220,7 @@ def test_migrate_mysql_config(libgitlab):
 
 
 def test_redis_configured(libgitlab):
-    "Test redis_configured."
+    """Test redis_configured."""
     assert not libgitlab.redis_configured()
     libgitlab.kv.set("redis_host", "redis_host")
     libgitlab.kv.set("redis_port", "redis_port")
@@ -228,7 +228,7 @@ def test_redis_configured(libgitlab):
 
 
 def test_remove_mysql_conf(libgitlab):
-    "Test remove_mysql_conf."
+    """Test remove_mysql_conf."""
     libgitlab.kv.set("mysql_host", "mysql_host")
     libgitlab.kv.set("mysql_port", "mysql_port")
     libgitlab.kv.set("mysql_db", "mysql_db")
@@ -242,7 +242,7 @@ def test_remove_mysql_conf(libgitlab):
 
 
 def test_remove_pgsql_conf(libgitlab):
-    "Test remove pgsql_conf."
+    """Test remove pgsql_conf."""
     libgitlab.kv.set("db_host", "db_host")
     libgitlab.kv.set("db_port", "db_port")
     libgitlab.kv.set("db_db", "db_db")
@@ -256,7 +256,7 @@ def test_remove_pgsql_conf(libgitlab):
 
 
 def test_save_pgsql_conf(libgitlab):
-    "Test save_pgsql_conf."
+    """Test save_pgsql_conf."""
     db = mock.Mock()
     master = mock.Mock()
     master.host = "host"
@@ -274,7 +274,7 @@ def test_save_pgsql_conf(libgitlab):
 
 
 def test_save_mysql_conf(libgitlab):
-    "Test save_mysql_conf."
+    """Test save_mysql_conf."""
     db = mock.Mock()
     db.host.return_value = "host"
     db.port.return_value = "port"
@@ -290,7 +290,7 @@ def test_save_mysql_conf(libgitlab):
 
 
 def test_save_redis_conf(libgitlab):
-    "Test save_redis_conf."
+    """Test save_redis_conf."""
     endpoint = mock.Mock()
     mock_redis = mock.Mock()
     mock_redis.get.return_value = "mock value"
@@ -305,7 +305,7 @@ def test_save_redis_conf(libgitlab):
 
 
 def test_remove_redis_conf(libgitlab):
-    "Test remove_redis_conf."
+    """Test remove_redis_conf."""
     libgitlab.kv.set("redis_host", "mock")
     libgitlab.kv.set("redis_port", "mock")
     libgitlab.kv.set("redis_pass", "mock")

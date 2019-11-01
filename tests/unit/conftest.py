@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 """Configure testing session for unit testing charm."""
-import mock
+import sys
 
+import yaml
 import pytest
+
+import mock
 
 from charmhelpers.core import unitdata
 
@@ -11,8 +14,6 @@ from charmhelpers.core import unitdata
 @pytest.fixture
 def mock_layers(monkeypatch):
     """Mock charm layer inclusion."""
-    import sys
-
     sys.modules["charms.layer"] = mock.Mock()
     sys.modules["reactive"] = mock.Mock()
     # Mock any functions in layers that need to be mocked here
@@ -22,8 +23,7 @@ def mock_layers(monkeypatch):
         if layer == "example-layer":
             options = {"port": 9999}
             return options
-        else:
-            return None
+        return None
 
     monkeypatch.setattr("libgitlab.layer.options", options)
 
@@ -31,8 +31,6 @@ def mock_layers(monkeypatch):
 @pytest.fixture
 def mock_hookenv_config(monkeypatch):
     """Mock charm hook environment items like charm configuration."""
-    import yaml
-
     def mock_config():
         cfg = {}
         yml = yaml.safe_load(open("./config.yaml"))
@@ -79,14 +77,11 @@ def mock_get_latest_version(monkeypatch):
 
 
 @pytest.fixture
-def mock_upgrade_package(
-    mock_get_installed_version, mock_get_latest_version, monkeypatch
-):
+def mock_upgrade_package(mock_get_installed_version, mock_get_latest_version, monkeypatch):
     """Mock the upgrade_package function and set the installed versions.
 
     When a wildcard is provided the minor and patch are set to 1
     """
-
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -150,6 +145,7 @@ def mock_gitlab_subprocess(monkeypatch):
 
 @pytest.fixture
 def mock_template(monkeypatch):
+    """Mock the file permission modification syscalls used by the templating library."""
     monkeypatch.setattr("libgitlab.templating.host.os.fchown", mock.Mock())
     monkeypatch.setattr("libgitlab.templating.host.os.chown", mock.Mock())
     monkeypatch.setattr("libgitlab.templating.host.os.fchmod", mock.Mock())
@@ -157,6 +153,7 @@ def mock_template(monkeypatch):
 
 @pytest.fixture
 def mock_unit_db(monkeypatch):
+    """Mock the key value store."""
     mock_kv = mock.Mock()
     mock_kv.return_value = unitdata.Storage(path=":memory:")
     monkeypatch.setattr("libgitlab.unitdata.kv", mock_kv)
