@@ -186,7 +186,7 @@ def test_migrate_db(libgitlab):
     assert libgitlab.install_pgloader.call_count == 0
     assert libgitlab.configure_pgloader.call_count == 0
     assert libgitlab.run_pgloader.call_count == 0
-    assert not libgitlab.kv.get('mysql_migratin_run')
+    assert not libgitlab.kv.get("mysql_migratin_run")
 
     # Migration
     libgitlab.kv.set("mysql_host", "mysql_host")
@@ -204,7 +204,19 @@ def test_migrate_db(libgitlab):
     assert libgitlab.install_pgloader.call_count == 1
     assert libgitlab.configure_pgloader.call_count == 1
     assert libgitlab.run_pgloader.call_count == 1
-    assert libgitlab.kv.get('mysql_migration_run')
+    assert libgitlab.kv.get("mysql_migration_run")
+
+
+def test_migrate_mysql_config(libgitlab):
+    "Test migrate_mysql_config."
+    assert not libgitlab.kv.get("db_host", None)
+    libgitlab.kv.set("mysql_host", "mysql_host")
+    libgitlab.kv.set("mysql_port", "mysql_port")
+    libgitlab.kv.set("mysql_db", "mysql_db")
+    libgitlab.kv.set("mysql_user", "mysql_user")
+    libgitlab.kv.set("mysql_pass", "mysql_pass")
+    libgitlab.migrate_mysql_config()
+    assert libgitlab.kv.get("db_host") == "mysql_host"
 
 
 def test_upgrade_gitlab_noop(libgitlab):
