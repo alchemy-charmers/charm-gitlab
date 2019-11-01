@@ -143,6 +143,12 @@ def test_install_pglodaer(libgitlab, mock_gitlab_fetch):
 
 def test_configure_pgloader(libgitlab):
     "Test configure_pgloader."
+    libgitlab.kv.set("mysql_host", "mysql_host")
+    libgitlab.kv.set("mysql_port", "mysql_port")
+    libgitlab.kv.set("mysql_db", "mysql_db")
+    libgitlab.kv.set("mysql_user", "mysql_user")
+    libgitlab.kv.set("mysql_pass", "mysql_pass")
+
     libgitlab.kv.set("pgsql_host", "pgsql_host")
     libgitlab.kv.set("pgsql_port", "pgsql_port")
     libgitlab.kv.set("pgsql_db", "pgsql_db")
@@ -168,6 +174,37 @@ def test_mysql_migrated(libgitlab):
     assert libgitlab.mysql_migrated() is False
     libgitlab.kv.set("mysql_migration_run", True)
     assert libgitlab.mysql_migrated() is True
+
+
+def test_migrate_db(libgitlab):
+    "Test migrate_db."
+    # No migration
+    libgitlab.install_pgloader = mock.Mock()
+    libgitlab.configure_pgloader = mock.Mock()
+    libgitlab.run_pgloader = mock.Mock()
+    libgitlab.migrate_db()
+    assert libgitlab.install_pgloader.call_count == 0
+    assert libgitlab.configure_pgloader.call_count == 0
+    assert libgitlab.run_pgloader.call_count == 0
+    assert not libgitlab.kv.get('mysql_migratin_run')
+
+    # Migration
+    libgitlab.kv.set("mysql_host", "mysql_host")
+    libgitlab.kv.set("mysql_port", "mysql_port")
+    libgitlab.kv.set("mysql_db", "mysql_db")
+    libgitlab.kv.set("mysql_user", "mysql_user")
+    libgitlab.kv.set("mysql_pass", "mysql_pass")
+
+    libgitlab.kv.set("pgsql_host", "pgsql_host")
+    libgitlab.kv.set("pgsql_port", "pgsql_port")
+    libgitlab.kv.set("pgsql_db", "pgsql_db")
+    libgitlab.kv.set("pgsql_user", "pgsql_user")
+    libgitlab.kv.set("pgsql_pass", "pgsql_pass")
+    libgitlab.migrate_db()
+    assert libgitlab.install_pgloader.call_count == 1
+    assert libgitlab.configure_pgloader.call_count == 1
+    assert libgitlab.run_pgloader.call_count == 1
+    assert libgitlab.kv.get('mysql_migration_run')
 
 
 def test_upgrade_gitlab_noop(libgitlab):

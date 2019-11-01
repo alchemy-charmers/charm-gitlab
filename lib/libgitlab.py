@@ -192,14 +192,10 @@ class GitlabHelper:
                 "maintenance",
                 "MySQL to PostgreSQL migration in progress via pgloader...",
             )
-            self.configure_pgloader()
+            self.run_pgloader()
             hookenv.log(
                 "Migrated database from MySQL to PostgreSQL, running configure.",
                 hookenv.INFO,
-            )
-            hookenv.status_set(
-                "maintenance",
-                "Finished MySQL to PostgreSQL migration, configuring GitLab...",
             )
             hookenv.status_set(
                 "maintenance",

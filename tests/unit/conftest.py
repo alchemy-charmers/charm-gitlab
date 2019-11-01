@@ -4,6 +4,7 @@ import mock
 
 import pytest
 
+from charmhelpers.core import unitdata
 
 # If layer options are used, add this to libgitlab
 # and import layer in libgitlab
@@ -185,6 +186,9 @@ def libgitlab(
     # Mock host functions not appropriate for unit testing
     gitlab.fetch_gitlab_apt_package = mock.Mock()
     gitlab.gitlab_reconfigure_run = mock.Mock()
+
+    # In-memory kv
+    gitlab.kv = unitdata.Storage(path=':memory:')
 
     # Any other functions that load the helper will get this version
     monkeypatch.setattr("libgitlab.GitlabHelper", lambda: gitlab)
