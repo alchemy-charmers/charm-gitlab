@@ -115,22 +115,22 @@ def test_configure_proxy(libgitlab):
 def test_mysql_configured(libgitlab):
     "Test mysql_configured"
     assert libgitlab.mysql_configured() is False
-    libgitlab.kv.set("mysql_host", "mock")
-    libgitlab.kv.set("mysql_port", "mock")
-    libgitlab.kv.set("mysql_db", "mock")
-    libgitlab.kv.set("mysql_user", "mock")
-    libgitlab.kv.set("mysql_pass", "mock")
+    libgitlab.kv.set("mysql_host", "mysql_host")
+    libgitlab.kv.set("mysql_port", "mysql_port")
+    libgitlab.kv.set("mysql_db", "mysql_db")
+    libgitlab.kv.set("mysql_user", "mysql_user")
+    libgitlab.kv.set("mysql_pass", "mysql_pass")
     assert libgitlab.mysql_configured() is True
 
 
 def test_legacy_db_configured(libgitlab):
     "Test legacy_db_configured."
     assert libgitlab.legacy_db_configured() is False
-    libgitlab.kv.set("db_host", "mock")
-    libgitlab.kv.set("db_port", "mock")
-    libgitlab.kv.set("db_db", "mock")
-    libgitlab.kv.set("db_user", "mock")
-    libgitlab.kv.set("db_pass", "mock")
+    libgitlab.kv.set("db_host", "db_host")
+    libgitlab.kv.set("db_port", "db_port")
+    libgitlab.kv.set("db_db", "db_db")
+    libgitlab.kv.set("db_user", "db_user")
+    libgitlab.kv.set("db_pass", "db_pass")
     assert libgitlab.legacy_db_configured() is True
 
 
@@ -139,6 +139,28 @@ def test_install_pglodaer(libgitlab, mock_gitlab_fetch):
     libgitlab.install_pgloader()
     assert mock_gitlab_fetch.apt_install.called
     assert mock_gitlab_fetch.apt_install.call_args == call("pgloader", fatal=True)
+
+
+def test_configure_pgloader(libgitlab):
+    "Test configure_pgloader."
+    libgitlab.kv.set("pgsql_host", "pgsql_host")
+    libgitlab.kv.set("pgsql_port", "pgsql_port")
+    libgitlab.kv.set("pgsql_db", "pgsql_db")
+    libgitlab.kv.set("pgsql_user", "pgsql_user")
+    libgitlab.kv.set("pgsql_pass", "pgsql_pass")
+
+    libgitlab.configure_pgloader()
+    with open(libgitlab.gitlab_commands_file, "rb") as commands_file:
+        content = commands_file.readlines()
+    assert (
+        b"     FROM mysql://mysql_user:mysql_pass@mysql_host:mysql_port/mysql_db\n"
+        in content
+    )
+    assert (
+        b"     INTO postgresql://pgsql_user:pgsql_pass@pgsql_host:pgsql_port/pgsql_db\n"
+        in content
+    )
+    assert b"ALTER SCHEMA 'mysql_db' RENAME TO 'public'\n" in content
 
 
 def test_upgrade_gitlab_noop(libgitlab):

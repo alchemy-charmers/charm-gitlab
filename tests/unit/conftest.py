@@ -56,7 +56,7 @@ def mock_remote_unit(monkeypatch):
 @pytest.fixture
 def mock_charm_dir(monkeypatch):
     """Mock the charm directory for charm in test."""
-    monkeypatch.setattr("libgitlab.hookenv.charm_dir", lambda: "/mock/charm/dir")
+    monkeypatch.setattr("libgitlab.hookenv.charm_dir", lambda: ".")
 
 
 @pytest.fixture
@@ -140,6 +140,21 @@ def mock_gitlab_fetch(monkeypatch):
 
 
 @pytest.fixture
+def mock_gitlab_subprocess(monkeypatch):
+    """Mock subprocess import on libgitlab."""
+    mock_subprocess = mock.Mock()
+    monkeypatch.setattr("libgitlab.subprocess", mock_subprocess)
+    return mock_subprocess
+
+
+@pytest.fixture
+def mock_template(monkeypatch):
+    monkeypatch.setattr("libgitlab.templating.host.os.fchown", mock.Mock())
+    monkeypatch.setattr("libgitlab.templating.host.os.chown", mock.Mock())
+    monkeypatch.setattr("libgitlab.templating.host.os.fchmod", mock.Mock())
+
+
+@pytest.fixture
 def libgitlab(
     tmpdir,
     mock_hookenv_config,
@@ -147,6 +162,8 @@ def libgitlab(
     mock_upgrade_package,
     mock_gitlab_socket,
     mock_gitlab_fetch,
+    mock_template,
+    mock_gitlab_subprocess,
     monkeypatch,
 ):
     """Mock important aspects of the charm helper library for operation during unit testing."""
@@ -159,6 +176,11 @@ def libgitlab(
     with open("./tests/unit/example.cfg", "r") as src_file:
         cfg_file.write(src_file.read())
     gitlab.example_config_file = cfg_file.strpath
+
+    commands_file = tmpdir.join("commands.load")
+    gitlab.gitlab_commands_file = commands_file.strpath
+    config_file = tmpdir.join("gitlab.rb")
+    gitlab.gitlab_config = config_file.strpath
 
     # Mock host functions not appropriate for unit testing
     gitlab.fetch_gitlab_apt_package = mock.Mock()
