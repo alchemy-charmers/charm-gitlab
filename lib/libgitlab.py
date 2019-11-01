@@ -40,12 +40,14 @@ class GitlabHelper:
             self.version = None
         self.set_package_name(self.charm_config["package_name"])
         self.kv = unitdata.kv()
+        self.gitlab_commands_file = "/etc/gitlab/commands.load"
 
     def set_package_name(self, name):
         """Parse and set the package name used to install and upgrade GitLab."""
         if name == "gitlab-ee":
             self.package_name = "gitlab-ee"
-        self.package_name = "gitlab-ce"
+        else:
+            self.package_name = "gitlab-ce"
 
     def restart(self):
         """Restart the GitLab service."""
@@ -68,7 +70,7 @@ class GitlabHelper:
         if url.hostname:
             return url.hostname
         else:
-            return socket.getfqdn
+            return socket.getfqdn()
 
     def get_sshport(self):
         """Return the host used when configuring SSH access to GitLab."""
@@ -135,13 +137,13 @@ class GitlabHelper:
         fetch.apt_install("pgloader", fatal=True)
 
     def configure_pgloader(self):
-        """Render templated commands.load file for pgloader to /etc/gitlab/commands.load."""
+        """Render templated commands.load file for pgloader to self.gitlab_commands_file."""
         hookenv.log(
             "Rendering pgloader commands.load file to /etc/gitlab", hookenv.INFO
         )
         templating.render(
             "commands.load.j2",
-            "/etc/gitlab/commands.load",
+            self.gitlab_commands_file,
             {
                 "pgsql_host": self.kv.get("pgsql_host"),
                 "pgsql_port": self.kv.get("pgsql_port"),
@@ -155,7 +157,7 @@ class GitlabHelper:
                 "mysql_password": self.kv.get("mysql_pass"),
             },
         )
-        if any_file_changed(["/etc/gitlab/commands.load"]):
+        if any_file_changed([self.gitlab_commands_file]):
             self.run_pgloader()
 
     def run_pgloader(self):
@@ -165,7 +167,7 @@ class GitlabHelper:
         # force a reconfigure as well
         self.gitlab_reconfigure_run()
         subprocess.check_output(
-            ["/usr/bin/pgloader", "/etc/gitlab/commands.load"], stderr=subprocess.STDOUT
+            ["/usr/bin/pgloader", self.gitlab_commands_file], stderr=subprocess.STDOUT
         )
 
     def mysql_migrated(self):
@@ -190,14 +192,10 @@ class GitlabHelper:
                 "maintenance",
                 "MySQL to PostgreSQL migration in progress via pgloader...",
             )
-            self.configure_pgloader()
+            self.run_pgloader()
             hookenv.log(
                 "Migrated database from MySQL to PostgreSQL, running configure.",
                 hookenv.INFO,
-            )
-            hookenv.status_set(
-                "maintenance",
-                "Finished MySQL to PostgreSQL migration, configuring GitLab...",
             )
             hookenv.status_set(
                 "maintenance",
@@ -287,10 +285,10 @@ class GitlabHelper:
     def save_redis_conf(self, endpoint):
         """Configure GitLab with knowledge of a related Redis instance."""
         redis = endpoint.relation_data()[0]
-        self.kv.set("redis_host", redis["host"])
-        self.kv.set("redis_port", redis["port"])
+        self.kv.set("redis_host", redis.get("host"))
+        self.kv.set("redis_port", redis.get("port"))
         if redis.get("password"):
-            self.kv.set("redis_pass", redis["password"])
+            self.kv.set("redis_pass", redis.get("password"))
         else:
             self.kv.unset("redis_pass")
 
@@ -482,7 +480,7 @@ class GitlabHelper:
         elif self.mysql_configured():
             templating.render(
                 "gitlab.rb.j2",
-                "/etc/gitlab/gitlab.rb",
+                self.gitlab_config,
                 {
                     "db_adapter": "mysql2",
                     "db_host": self.kv.get("mysql_host"),
@@ -501,7 +499,7 @@ class GitlabHelper:
         elif self.legacy_db_configured():
             templating.render(
                 "gitlab.rb.j2",
-                "/etc/gitlab/gitlab.rb",
+                self.gitlab_config,
                 {
                     "db_adapter": "mysql2",
                     "db_host": self.kv.get("db_host"),
@@ -523,7 +521,7 @@ class GitlabHelper:
             )
             hookenv.log("Skipping configuration due to missing DB config")
             return False
-        if any_file_changed(["/etc/gitlab/gitlab.rb"]):
+        if any_file_changed([self.gitlab_config]):
             self.gitlab_reconfigure_run()
         return True
 
