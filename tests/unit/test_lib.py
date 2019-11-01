@@ -90,7 +90,7 @@ def test_configure_proxy(libgitlab):
 
     # Test HTTPS
     mock_proxy.reset_mock()
-    libgitlab.charm_config['external_url'] = "https://mock.example.com"
+    libgitlab.charm_config["external_url"] = "https://mock.example.com"
     libgitlab.configure_proxy(mock_proxy)
     assert mock_proxy.configure.called
     assert mock_proxy.configure.call_args == call(
@@ -110,6 +110,17 @@ def test_configure_proxy(libgitlab):
             },
         ]
     )
+
+
+def test_mysql_configured(libgitlab):
+    "Test mysql_configured"
+    assert libgitlab.mysql_configured() is False
+    libgitlab.kv.set('mysql_host', 'mock')
+    libgitlab.kv.set('mysql_port', 'mock')
+    libgitlab.kv.set('mysql_db', 'mock')
+    libgitlab.kv.set('mysql_user', 'mock')
+    libgitlab.kv.set('mysql_pass', 'mock')
+    assert libgitlab.mysql_configured() is True
 
 
 def test_upgrade_gitlab_noop(libgitlab):
