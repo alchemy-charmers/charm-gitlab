@@ -40,6 +40,7 @@ async def app(model, series, source):
     return model.applications[app_name]
 
 
+@pytest.mark.timeout(30)
 async def test_gitlab_deploy(model, series, source, request):
     """Start the deploy of the GitLab charm across supported series."""
     application_name = "gitlab-{}-{}".format(series, source[0])
@@ -54,19 +55,21 @@ async def test_gitlab_deploy(model, series, source, request):
     await model.block_until(lambda: app.status == "waiting")
 
 
+@pytest.mark.timeout(30)
 async def test_redis_deploy(model, series, app, request):
     """Create a Redis deployment for testing relation to GitLab."""
     if app.name.endswith("jujucharms"):
         pytest.skip("No need to test the charm deploy")
 
     application_name = "gitlab-redis-{}".format(series)
-    cmd = "juju deploy cs:~omnivector/redis -m {} --series xenial {}".format(
+    cmd = "juju deploy cs:~redis-charmers/redis -m {} --series xenial {}".format(
         model.info.name, application_name
     )
     await asyncio.create_subprocess_shell(cmd)
     await model._wait_for_new("application", application_name)
 
 
+@pytest.mark.timeout(30)
 async def test_pgsql_deploy(model, series, app, request):
     """Create a PostgreSQL deployment for testing relation to GitLab."""
     if app.name.endswith("jujucharms"):
@@ -80,6 +83,7 @@ async def test_pgsql_deploy(model, series, app, request):
     await model._wait_for_new("application", application_name)
 
 
+@pytest.mark.timeout(30)
 async def test_mysql_deploy(model, series, app, request):
     """Create a MySQL deployment for testing relation to GitLab."""
     if app.name.endswith("jujucharms"):
@@ -93,6 +97,7 @@ async def test_mysql_deploy(model, series, app, request):
     await model._wait_for_new("application", application_name)
 
 
+@pytest.mark.timeout(300)
 async def test_initial_deploy_status(model, app, request, series):
     """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
     unit = app.units[0]
@@ -113,6 +118,7 @@ async def test_initial_deploy_status(model, app, request, series):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(30)
 async def test_redis_relate(model, series, app, request):
     """Test relating Redis to GitLab."""
     application_name = "gitlab-redis-{}".format(series)
@@ -124,6 +130,7 @@ async def test_redis_relate(model, series, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(30)
 async def test_mysql_relate(model, series, app, request):
     """Test relating MySQL to GitLab, expect failure due to removal of MySQL support."""
     application_name = "gitlab-mysql-{}".format(series)
@@ -135,6 +142,7 @@ async def test_mysql_relate(model, series, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(60)
 async def test_gitlab_deploy_status_mysql(model, app, request):
     """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
     unit = app.units[0]
@@ -146,6 +154,7 @@ async def test_gitlab_deploy_status_mysql(model, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(30)
 async def test_pgsql_relate(model, series, app, request):
     """Test relating PostgreSQL to GitLab."""
     application_name = "gitlab-postgresql-{}".format(series)
@@ -159,6 +168,7 @@ async def test_pgsql_relate(model, series, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(60)
 async def test_migrate_action(app):
     """Test migrate execution against deployed GitLab instances for the local charm."""
     if app.name.endswith("jujucharms"):
@@ -169,6 +179,7 @@ async def test_migrate_action(app):
     assert action.status == "completed"
 
 
+@pytest.mark.timeout(30)
 async def test_gitlab_deploy_status_migrate(model, app, request):
     """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
     unit = app.units[0]
@@ -180,6 +191,7 @@ async def test_gitlab_deploy_status_migrate(model, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(30)
 async def test_mysql_unrelate(model, series, app, request):
     """Test removing MySQL relation to GitLab, unit should configure and enter active state."""
     application_name = "gitlab-mysql-{}".format(series)
@@ -191,6 +203,7 @@ async def test_mysql_unrelate(model, series, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(120)
 async def test_charm_upgrade(model, app, request):
     """Test upgrade of the juju charm store deployed GitLab to the local charm."""
     if app.name.endswith("local"):
@@ -211,6 +224,7 @@ async def test_charm_upgrade(model, app, request):
     assert app.status != "error"
 
 
+@pytest.mark.timeout(30)
 async def test_reconfigure_action(app):
     """Test action execution against deployed GitLab instances for the local charm."""
     if app.name.endswith("jujucharms"):
@@ -221,6 +235,7 @@ async def test_reconfigure_action(app):
     assert action.status == "completed"
 
 
+@pytest.mark.timeout(30)
 async def test_run_command(app, jujutools):
     """Test command execution against deployed GitLab instances for the local charm."""
     if app.name.endswith("jujucharms"):
@@ -232,6 +247,7 @@ async def test_run_command(app, jujutools):
     assert "test" in results["Stdout"]
 
 
+@pytest.mark.timeout(30)
 async def test_juju_file_stat(app, jujutools):
     """Test the ability to retrieve the status of a file from a deployed unit."""
     if app.name.endswith("jujucharms"):
