@@ -14,23 +14,17 @@ from charmhelpers.core import unitdata
 @pytest.fixture
 def mock_layers(monkeypatch):
     """Mock charm layer inclusion."""
-    sys.modules["charms.layer"] = mock.Mock()
-    sys.modules["reactive"] = mock.Mock()
-    # Mock any functions in layers that need to be mocked here
+    mock_layer_backup = mock.Mock()
+    sys.modules["layer_backup"] = mock_layer_backup
 
-    def options(layer):
-        # mock options for layers here
-        if layer == "example-layer":
-            options = {"port": 9999}
-            return options
-        return None
-
-    monkeypatch.setattr("libgitlab.layer.options", options)
+    monkeypatch.setattr("libgitlab.layer_backup", mock_layer_backup)
+    return {"layer_backup": mock_layer_backup}
 
 
 @pytest.fixture
 def mock_hookenv_config(monkeypatch):
     """Mock charm hook environment items like charm configuration."""
+
     def mock_config():
         cfg = {}
         yml = yaml.safe_load(open("./config.yaml"))
@@ -77,11 +71,14 @@ def mock_get_latest_version(monkeypatch):
 
 
 @pytest.fixture
-def mock_upgrade_package(mock_get_installed_version, mock_get_latest_version, monkeypatch):
+def mock_upgrade_package(
+    mock_get_installed_version, mock_get_latest_version, monkeypatch
+):
     """Mock the upgrade_package function and set the installed versions.
 
     When a wildcard is provided the minor and patch are set to 1
     """
+
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -162,6 +159,7 @@ def mock_unit_db(monkeypatch):
 @pytest.fixture
 def libgitlab(
     tmpdir,
+    mock_layers,
     mock_hookenv_config,
     mock_charm_dir,
     mock_upgrade_package,
