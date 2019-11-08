@@ -19,3 +19,6 @@
 [submodule "layers/layer-basic"]
 	path = layers/layer-basic
 	url = https://github.com/juju-solutions/layer-basic.git
+[submodule "layers/layer-backup"]
+	path = layers/layer-backup
+	url = https://github.com/pirate-charmers/layer-backup.git
