@@ -18,7 +18,7 @@ from charmhelpers.fetch import ubuntu_apt_pkg
 from charms.reactive.flags import _get_flag_value
 from charms.reactive.helpers import any_file_changed
 
-from reactive import layer_backup
+from reactive.layer_backup import Backup as BackupHelper
 
 import semantic_version
 
@@ -538,4 +538,5 @@ class GitlabHelper:
         """Run Gitlab backup and backup from layer-backup."""
         cmd = ["sudo", "gitlab-backup", "create", "STRATEGY=copy"]
         subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        layer_backup.backup()
+        bh = BackupHelper()
+        bh.backup()
