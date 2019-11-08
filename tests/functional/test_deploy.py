@@ -244,3 +244,11 @@ async def test_juju_file_stat(app, jujutools):
     assert stat.filemode(fstat.st_mode) == "-rw-r--r--"
     assert fstat.st_uid == 0
     assert fstat.st_gid == 0
+
+
+async def test_backup_action(app):
+    """Test the backup action"""
+    unit = app.units[0]
+    action = await unit.run_action("backup")
+    action = await action.wait()
+    assert action.status == "completed"
