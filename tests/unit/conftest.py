@@ -24,7 +24,6 @@ def mock_layers(monkeypatch):
 @pytest.fixture
 def mock_hookenv_config(monkeypatch):
     """Mock charm hook environment items like charm configuration."""
-
     def mock_config():
         cfg = {}
         yml = yaml.safe_load(open("./config.yaml"))
@@ -78,7 +77,6 @@ def mock_upgrade_package(
 
     When a wildcard is provided the minor and patch are set to 1
     """
-
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
