@@ -75,8 +75,8 @@ class GitlabHelper:
     def get_sshport(self):
         """Return the host used when configuring SSH access to GitLab."""
         if _get_flag_value("reverseproxy.configured"):
-            return self.charm_config['ssh_port']
-        return '22'
+            return self.charm_config["ssh_port"]
+        return "22"
 
     def configure_proxy(self, proxy):
         """Configure GitLab for operation behind a reverse proxy."""
@@ -304,19 +304,14 @@ class GitlabHelper:
         apt_repo = self.charm_config.get("apt_repo")
         apt_key = self.charm_config.get("apt_key")
         apt_line = "deb {}/{}/ubuntu {} main".format(
-            apt_repo,
-            self.package_name,
-            distro
+            apt_repo, self.package_name, distro
         )
         hookenv.log(
             "Installing and updating apt source for {}: {} key {})".format(
                 self.package_name, apt_line, apt_key
             )
         )
-        fetch.add_source(
-            apt_line,
-            apt_key,
-        )
+        fetch.add_source(apt_line, apt_key)
         fetch.apt_update()
 
     def fetch_gitlab_apt_package(self):
@@ -352,11 +347,7 @@ class GitlabHelper:
         if package.version:
             latest_version = package.version
         if latest_version:
-            hookenv.log(
-                "Found latest GitLab version {}".format(
-                    latest_version
-                )
-            )
+            hookenv.log("Found latest GitLab version {}".format(latest_version))
         else:
             hookenv.log("GitLab package not found in index")
         return latest_version
@@ -517,7 +508,8 @@ class GitlabHelper:
             )
         else:
             hookenv.status_set(
-                "blocked", "DB configuration is missing. Verify database relations to continue."
+                "blocked",
+                "DB configuration is missing. Verify database relations to continue.",
             )
             hookenv.log("Skipping configuration due to missing DB config")
             return False
