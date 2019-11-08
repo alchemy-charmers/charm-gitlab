@@ -1,0 +1,8 @@
+#!bin/charm-env python3
+
+from libgitlab import GitlabHelper
+
+gitlab = GitlabHelper()
+gitlab.backup()
+
+# vim: filetype=python

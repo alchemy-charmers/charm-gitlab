@@ -29,3 +29,12 @@ def test_migrate_db_action(libgitlab, monkeypatch):
     assert mock_function.call_count == 0
     imp.load_source("migratedb", "./actions/migratedb")
     assert mock_function.call_count == 1
+
+
+def test_backup_action(libgitlab, monkeypatch):
+    """Test backup action."""
+    mock_function = mock.Mock()
+    monkeypatch.setattr(libgitlab, "backup", mock_function)
+    assert mock_function.call_count == 0
+    imp.load_source("backup", "./actions/backup")
+    assert mock_function.call_count == 1
