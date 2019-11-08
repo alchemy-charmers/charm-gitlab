@@ -15,9 +15,9 @@ from charmhelpers.core import unitdata
 def mock_layers(monkeypatch):
     """Mock charm layer inclusion."""
     mock_layer_backup = mock.Mock()
-    sys.modules["layer_backup"] = mock_layer_backup
+    sys.modules["reactive.layer_backup"] = mock_layer_backup
 
-    monkeypatch.setattr("libgitlab.layer_backup", mock_layer_backup)
+    monkeypatch.setattr("libgitlab.BackupHelper", mock_layer_backup)
     return {"layer_backup": mock_layer_backup}
 
 

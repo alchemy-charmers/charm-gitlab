@@ -384,4 +384,4 @@ def test_backup(libgitlab, mock_gitlab_subprocess, mock_layers):
     """Test backup."""
     libgitlab.backup()
     assert mock_gitlab_subprocess.check_output.call_count == 1
-    assert mock_layers["layer_backup"].backup.call_count == 1
+    assert mock_layers["layer_backup"].call_count == 1
