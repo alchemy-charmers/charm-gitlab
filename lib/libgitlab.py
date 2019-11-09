@@ -286,7 +286,10 @@ class GitlabHelper:
 
     def save_redis_conf(self, endpoint):
         """Configure GitLab with knowledge of a related Redis instance."""
-        redis = endpoint.relation_data()[0]
+        try:
+            redis = endpoint.relation_data()[0]
+        except IndexError:
+            return  # No relation data yet
         self.kv.set("redis_host", redis.get("host"))
         self.kv.set("redis_port", redis.get("port"))
         if redis.get("password"):
