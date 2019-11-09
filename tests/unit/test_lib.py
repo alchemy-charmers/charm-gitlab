@@ -294,6 +294,13 @@ def test_save_redis_conf(libgitlab):
     endpoint = mock.Mock()
     mock_redis = mock.Mock()
     mock_redis.get.return_value = "mock value"
+
+    # Test relation before data is available
+    endpoint.relation_data.return_value = []
+    libgitlab.save_redis_conf(endpoint)
+    assert libgitlab.kv.get("redis_host") is None
+
+    # Test relation after before data is available
     endpoint.relation_data.return_value = [mock_redis]
     libgitlab.save_redis_conf(endpoint)
     assert libgitlab.kv.get("redis_host") == "mock value"
