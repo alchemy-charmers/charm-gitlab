@@ -317,7 +317,6 @@ class GitlabHelper:
             )
         )
         fetch.add_source(apt_line, apt_key)
-        fetch.apt_update()
 
     def fetch_gitlab_apt_package(self):
         """Return reference to GitLab package information in the APT cache."""
