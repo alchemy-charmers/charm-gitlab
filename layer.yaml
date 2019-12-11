@@ -1,6 +1,7 @@
 includes:
   - layer:basic
   - layer:version
+  - layer:backup
   - interface:reverseproxy
   - interface:pgsql
   - interface:mysql
@@ -11,4 +12,10 @@ ignore:
 options:
   version:
     file_name: "repo-info"
+  backup:
+    backup-name: "gitlab"
+    backup-files: |-
+      /var/opt/gitlab/backups/
+      /etc/gitlab/gitlab.rb
+      /etc/gitlab/gitlab-secrets.json
 repo: https://github.com/pirate-charmers/layer-gitlab.git
