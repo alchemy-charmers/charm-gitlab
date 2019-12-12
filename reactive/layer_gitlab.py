@@ -115,6 +115,11 @@ def configure_gitlab(reverseproxy, *args):
     Templates the GitLab Omnibus configuration file, rerunning the OmniBus
     installer to handle actual configuration.
     """
+    # These interfaces don't clear their changed status
+    clear_flag("db.changed")
+    clear_flag("pgsql.database.changed")
+    clear_flag("endpoint.redis.changed")
+
     hookenv.status_set("maintenance", "Configuring GitLab")
     hookenv.log(
         ("Configuring GitLab, then running gitlab-ctl " "reconfigure on changes")
