@@ -1,5 +1,8 @@
 """Provides the main reactive layer for the GitLab charm."""
 
+import socket
+import subprocess
+
 from charmhelpers.core import hookenv
 
 from charms.reactive import (
@@ -178,6 +181,7 @@ def configure_gitlab(reverseproxy, *args):
         hookenv.log("Running GitLab configuration/install")
         if gitlab.configure():
             hookenv.status_set("active", HEALTHY)
+            set_flag("gitlab.configured")
     else:
         hookenv.log("DB and/or Redis unconfigured, skipping install.")
 
@@ -194,3 +198,34 @@ def configure_proxy():
 
     hookenv.status_set("active", HEALTHY)
     set_flag("reverseproxy.configured")
+
+
+def get_runner_token():
+    """Get the runner token for registering a runner."""
+    cmd = (
+        "gitlab-rails runner -e production "
+        "'puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token'"
+    )
+    result = subprocess.check_output(cmd, shell=True)
+    return result.decode("utf-8").rstrip("\n")
+
+
+@when_all("endpoint.runner.joined", "gitlab.configured")
+@when_not("runner.published")
+def publish_runner_config():
+    """ Publish the configuration for a runner to register """
+    endpoint = endpoint_from_flag("endpoint.runner.joined")
+    server_uri = "http://{}".format(socket.getfqdn())
+    server_token = get_runner_token()
+    hookenv.log(
+        "Publishing runner config uri/token: {}/{}".format(server_uri, server_token),
+        "DEBUG",
+    )
+    endpoint.publish(server_uri, server_token)
+    set_flag("runner.published")
+
+
+@when("endpoint.runner.departed")
+def handle_runner_departed():
+    """Handle relations departed"""
+    clear_flag("runner.published")
