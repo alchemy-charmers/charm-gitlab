@@ -213,7 +213,7 @@ def get_runner_token():
 @when_all("endpoint.runner.joined", "gitlab.configured")
 @when_not("runner.published")
 def publish_runner_config():
-    """ Publish the configuration for a runner to register """
+    """Publish the configuration for a runner to register."""
     endpoint = endpoint_from_flag("endpoint.runner.joined")
     server_uri = "http://{}".format(socket.getfqdn())
     server_token = get_runner_token()
@@ -227,5 +227,5 @@ def publish_runner_config():
 
 @when("endpoint.runner.departed")
 def handle_runner_departed():
-    """Handle relations departed"""
+    """Handle relations departed."""
     clear_flag("runner.published")
