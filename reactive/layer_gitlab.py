@@ -1,6 +1,6 @@
 """Provides the main reactive layer for the GitLab charm."""
 
-import socket
+# import socket
 import subprocess
 
 from charmhelpers.core import hookenv
@@ -215,7 +215,7 @@ def get_runner_token():
 def publish_runner_config():
     """Publish the configuration for a runner to register."""
     endpoint = endpoint_from_flag("endpoint.runner.joined")
-    server_uri = "http://{}".format(socket.getfqdn())
+    server_uri = gitlab.get_external_uri()
     server_token = get_runner_token()
     hookenv.log(
         "Publishing runner config uri/token: {}/{}".format(server_uri, server_token),
