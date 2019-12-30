@@ -202,12 +202,15 @@ def configure_proxy():
 
 def get_runner_token():
     """Get the runner token for registering a runner."""
-    cmd = (
-        "gitlab-rails runner -e production "
-        "'puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token'"
-    )
-    result = subprocess.check_output(cmd, shell=True)
-    return result.decode("utf-8").rstrip("\n")
+    cmd = [
+        "/usr/bin/gitlab-rails",
+        "runner",
+        "-e",
+        "production",
+        "STDOUT.write Gitlab::CurrentSettings.current_application_settings.runners_registration_token" 
+    ]
+    token = subprocess.check_output(cmd)
+    return token.decode("utf-8")
 
 
 @when_all("endpoint.runner.joined", "gitlab.configured")
