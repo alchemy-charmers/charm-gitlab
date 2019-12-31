@@ -6,6 +6,7 @@ includes:
   - interface:pgsql
   - interface:mysql
   - interface:redis
+  - interface:gitlab-ci
 ignore:
   - report
   - tests
