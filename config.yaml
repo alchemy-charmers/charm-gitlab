@@ -27,3 +27,7 @@ options:
     type: string
     default: "gitlab-ce"
     description: "The package to use. Options are gitlab-ce for the FOSS version of gitlab-ee for the Enterprise Edition."
+  runners_bypass_proxy:
+    type: boolean
+    default: False
+    description: "Register runners with fqdn even if a proxy is in use. The default value of False will register runners through the reverseproxy if present."
