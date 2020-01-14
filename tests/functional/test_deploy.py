@@ -99,6 +99,7 @@ async def test_mysql_deploy(model, series, app, request):
 
 @pytest.mark.timeout(30)
 async def test_haproxy_deploy(model):
+    """Deploy haproxy for testing."""
     cmd = "juju deploy cs:~pirate-charmers/haproxy -m {}".format(model.info.name)
     await asyncio.create_subprocess_shell(cmd)
     await model._wait_for_new("application", "haproxy")

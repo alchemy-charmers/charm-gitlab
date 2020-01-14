@@ -108,7 +108,7 @@ class JujuTools:
 
     async def service_status(self, service, target):
         """
-        Returns status of a service on target unit
+        Return status of a service on target unit.
 
         :param service: Name of the service
         :param target: Unit object or unit name string
@@ -118,9 +118,7 @@ class JujuTools:
         return result
 
     async def convert_config(self, config):
-        """
-        Converts config dictionary from get_config to one valid for set_config.
-        """
+        """Convert config dictionary from get_config to one valid for set_config."""
         clean_config = {}
         for key, value in config.items():
             clean_config[key] = "{}".format(value['value'])
@@ -129,6 +127,7 @@ class JujuTools:
     async def test_config(self, config, app, tests):
         """
         Verifies contents of files after a config change on an application.
+
         Application configuration will be reset to the original value even if an
         assertion fails.
 
