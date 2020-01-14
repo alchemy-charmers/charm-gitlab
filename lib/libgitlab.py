@@ -106,7 +106,7 @@ class GitlabHelper:
             {
                 "mode": "tcp",
                 "external_port": self.charm_config["ssh_port"],
-                "internal_host": socket.getfqdn(),
+                "internal_host": internal_host,
                 "internal_port": 22,
             },
         ]

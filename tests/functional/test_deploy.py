@@ -97,6 +97,13 @@ async def test_mysql_deploy(model, series, app, request):
     await model._wait_for_new("application", application_name)
 
 
+@pytest.mark.timeout(30)
+async def test_haproxy_deploy(model):
+    cmd = "juju deploy cs:~pirate-charmers/haproxy -m {}".format(model.info.name)
+    await asyncio.create_subprocess_shell(cmd)
+    await model._wait_for_new("application", "haproxy")
+
+
 @pytest.mark.timeout(300)
 async def test_initial_deploy_status(model, app, request, series):
     """Wait for the deployment of GitLab to complete and test the status is blocked prior to relations."""
@@ -270,3 +277,24 @@ async def test_backup_action(app):
     action = await unit.run_action("backup")
     action = await action.wait()
     assert action.status == "completed"
+
+
+@pytest.mark.timeout(30)
+async def test_add_relation(model, app, series, source):
+    """Add relation for reverseproxy."""
+    haproxy = model.applications['haproxy']
+    config = {'external_url': "https://{}-{}.example.com".format(series, source[0]),
+              'proxy_via_ip': "true"}
+    await app.set_config(config)
+    await app.add_relation('reverseproxy', 'haproxy:reverseproxy')
+    await model.block_until(lambda: haproxy.status == 'maintenance')
+    await model.block_until(lambda: haproxy.status == 'active')
+
+
+async def test_reverseproxy_config(model, app, jujutools):
+    """Check haproxy config includes gitlab."""
+    haproxy = model.applications['haproxy']
+    config = await jujutools.file_contents("/etc/haproxy/haproxy.cfg", haproxy.units[0])
+    public_address = app.units[0].public_address
+    assert "{}:80".format(public_address) in config
+    assert "{}:22".format(public_address) in config
