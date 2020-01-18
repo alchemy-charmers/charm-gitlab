@@ -101,18 +101,24 @@ class GitlabHelper:
         else:
             port = 80
 
+        if self.charm_config["proxy_via_ip"]:
+            networks = hookenv.network_get(proxy.relation_name)
+            internal_host = networks["ingress-addresses"][0]
+        else:
+            internal_host = socket.getfqdn()
+
         proxy_config = [
             {
                 "mode": "http",
                 "external_port": port,
-                "internal_host": socket.getfqdn(),
+                "internal_host": internal_host,
                 "internal_port": self.charm_config["http_port"],
                 "subdomain": url.hostname,
             },
             {
                 "mode": "tcp",
                 "external_port": self.charm_config["ssh_port"],
-                "internal_host": socket.getfqdn(),
+                "internal_host": internal_host,
                 "internal_port": 22,
             },
         ]

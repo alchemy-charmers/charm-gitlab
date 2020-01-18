@@ -31,6 +31,10 @@ options:
     type: boolean
     default: False
     description: "Register runners with fqdn even if a proxy is in use. The default value of False will register runners through the reverseproxy if present."
+  proxy_via_ip:
+    type: boolean
+    default: False
+    description: "Register IP rather than FQDN with the reverseproxy to support environments without DNS resolution of the host."
   smtp_server:
     type: string
     default: ""
