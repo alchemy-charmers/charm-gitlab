@@ -13,7 +13,7 @@ import subprocess
 
 from charmhelpers import fetch
 from charmhelpers.core import hookenv, host, templating, unitdata
-from charmhelpers.fetch import ubuntu_apt_pkg
+from charmhelpers.fetch import apt_install, apt_update, add_source, ubuntu_apt_pkg
 
 from charms.reactive.flags import _get_flag_value
 from charms.reactive.helpers import any_file_changed
@@ -80,6 +80,19 @@ class GitlabHelper:
             return self.charm_config["ssh_port"]
         return "22"
 
+    def get_smtp_enabled(self):
+        """Return True if all configuration is in place for external SMTP usage."""
+        if self.charm_config.get("smtp_server") and self.charm_config.get("smtp_port"):
+            return True
+        return False
+
+    def get_smtp_domain(self):
+        """Return the SMTP domain based on configuration but default to the domain portion of the external host."""
+        if self.charm_config.get("smtp_domain", None):
+            return self.charm_config.get("smtp_domain")
+        else:
+            return self.get_sshhost()
+
     def configure_proxy(self, proxy):
         """Configure GitLab for operation behind a reverse proxy."""
         url = urlparse(self.get_external_uri())
@@ -136,7 +149,7 @@ class GitlabHelper:
             "maintenance", "Installing and configuring pgloader to perform migration..."
         )
         hookenv.log("Installing pgloader...", hookenv.INFO)
-        fetch.apt_install("pgloader", fatal=True)
+        apt_install("pgloader", fatal=True)
 
     def configure_pgloader(self):
         """Render templated commands.load file for pgloader to self.gitlab_commands_file."""
@@ -316,12 +329,12 @@ class GitlabHelper:
                 self.package_name, apt_line, apt_key
             )
         )
-        fetch.add_source(apt_line, apt_key)
+        add_source(apt_line, apt_key)
 
     def fetch_gitlab_apt_package(self):
         """Return reference to GitLab package information in the APT cache."""
         self.add_sources()
-        fetch.apt_update()
+        apt_update()
         apt_cache = ubuntu_apt_pkg.Cache()
         hookenv.log("Fetching package information for {}".format(self.package_name))
         package = False
@@ -379,9 +392,9 @@ class GitlabHelper:
     def upgrade_package(self, version=None):
         """Upgrade GitLab to a specific version given an apt package version or wildcard."""
         if version:
-            fetch.apt_install("{}={}".format(self.package_name, version), fatal=True)
+            apt_install("{}={}".format(self.package_name, version), fatal=True)
         else:
-            fetch.apt_install("{}".format(self.package_name), fatal=True)
+            apt_install("{}".format(self.package_name), fatal=True)
 
     def upgrade_gitlab(self):
         """Check if a major version upgrade is being performed and install upgrades in the correct order."""
@@ -466,9 +479,17 @@ class GitlabHelper:
                     "db_password": self.kv.get("pgsql_pass"),
                     "redis_host": self.kv.get("redis_host"),
                     "redis_port": self.kv.get("redis_port"),
-                    "http_port": self.charm_config["http_port"],
+                    "http_port": self.charm_config.get("http_port"),
                     "ssh_host": self.get_sshhost(),
                     "ssh_port": self.get_sshport(),
+                    "smtp_enabled": self.get_smtp_enabled(),
+                    "smtp_server": self.charm_config.get("smtp_server"),
+                    "smtp_port": self.charm_config.get("smtp_port"),
+                    "smtp_user": self.charm_config.get("smtp_user"),
+                    "smtp_password": self.charm_config.get("smtp_password"),
+                    "smtp_domain": self.get_smtp_domain(),
+                    "smtp_auth": self.charm_config.get("smtp_auth"),
+                    "smtp_tls": self.charm_config.get("smtp_tls"),
                     "url": self.get_external_uri(),
                 },
             )
@@ -488,6 +509,14 @@ class GitlabHelper:
                     "http_port": self.charm_config["http_port"],
                     "ssh_host": self.get_sshhost(),
                     "ssh_port": self.get_sshport(),
+                    "smtp_enabled": self.get_smtp_enabled(),
+                    "smtp_server": self.charm_config.get("smtp_server"),
+                    "smtp_port": self.charm_config.get("smtp_port"),
+                    "smtp_user": self.charm_config.get("smtp_user"),
+                    "smtp_password": self.charm_config.get("smtp_password"),
+                    "smtp_domain": self.get_smtp_domain(),
+                    "smtp_auth": self.charm_config.get("smtp_auth"),
+                    "smtp_tls": self.charm_config.get("smtp_tls"),
                     "url": self.get_external_uri(),
                 },
             )
@@ -507,6 +536,14 @@ class GitlabHelper:
                     "http_port": self.charm_config["http_port"],
                     "ssh_host": self.get_sshhost(),
                     "ssh_port": self.get_sshport(),
+                    "smtp_enabled": self.get_smtp_enabled(),
+                    "smtp_server": self.charm_config.get("smtp_server"),
+                    "smtp_port": self.charm_config.get("smtp_port"),
+                    "smtp_user": self.charm_config.get("smtp_user"),
+                    "smtp_password": self.charm_config.get("smtp_password"),
+                    "smtp_domain": self.get_smtp_domain(),
+                    "smtp_auth": self.charm_config.get("smtp_auth"),
+                    "smtp_tls": self.charm_config.get("smtp_tls"),
                     "url": self.get_external_uri(),
                 },
             )

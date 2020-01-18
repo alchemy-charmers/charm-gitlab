@@ -64,6 +64,15 @@ def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
     assert result == libgitlab.charm_config["ssh_port"]
 
 
+def test_get_smtp_enabled(libgitlab, mock_gitlab_get_flag_value):
+    """Test get_smtp_enabled."""
+    result = libgitlab.get_smtp_enabled()
+    assert result is False
+    libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
+    result = libgitlab.get_smtp_enabled()
+    assert result is True
+
+
 def test_configure_proxy(libgitlab):
     """Test configure_proxy."""
     # Test HTTP
@@ -134,11 +143,11 @@ def test_legacy_db_configured(libgitlab):
     assert libgitlab.legacy_db_configured() is True
 
 
-def test_install_pglodaer(libgitlab, mock_gitlab_fetch):
+def test_install_pgloader(libgitlab, mock_apt_install):
     """Test install_pgloader."""
     libgitlab.install_pgloader()
-    assert mock_gitlab_fetch.apt_install.called
-    assert mock_gitlab_fetch.apt_install.call_args == call("pgloader", fatal=True)
+    assert mock_apt_install.called
+    assert mock_apt_install.call_args == call("pgloader", fatal=True)
 
 
 def test_configure_pgloader(libgitlab):
