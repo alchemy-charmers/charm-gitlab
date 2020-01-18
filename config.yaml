@@ -35,3 +35,31 @@ options:
     type: boolean
     default: False
     description: "Register IP rather than FQDN with the reverseproxy to support environments without DNS resolution of the host."
+  smtp_server:
+    type: string
+    default: ""
+    description: "Set the external SMTP host to use when sending emails from GitLab. If unset, will default to local MTA."
+  smtp_port:
+    type: int
+    default: 25
+    description: "When using external SMTP, this setting allows you to customise the TCP port used to connect to the SMTP server."
+  smtp_user:
+    type: string
+    default: ""
+    description: "If both smtp_user and smtp_password are set, authentication will be used with the provided credentials when connecting to the configured external SMTP server."
+  smtp_password:
+    type: string
+    default: ""
+    description: "If both smtp_user and smtp_password are set, authentication will be used with the provided credentials when connecting to the configured external SMTP server."
+  smtp_domain:
+    type: string
+    default: ""
+    description: "The domain to use when sending email from GitLab. Will default to the server name, influenced by the external URL configured."
+  smtp_auth_method:
+    type: string
+    default: "login"
+    description: "Used to override the authentication method to use when external SMTP is in use."
+  smtp_tls:
+    type: boolean
+    default: false
+    description: "Set this to true to enable TLS when connecting to the configured external SMTP server."

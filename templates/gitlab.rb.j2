@@ -19,6 +19,22 @@ gitlab_rails['db_host'] = "{{ db_host }}"
 gitlab_rails['db_port'] = "{{ db_port }}"
 gitlab_rails['db_encoding'] = "utf8"
 
+##! SMTP settings
+{% if smtp_enabled %}
+gitlab_rails['smtp_enable'] = {{ smtp_enabled }}
+gitlab_rails['smtp_address'] = {{ smtp_server }}
+gitlab_rails['smtp_port'] = {{ smtp_port }}
+{% if smtp_user and smtp_password %}
+gitlab_rails['smtp_user_name'] = {{ smtp_user }}
+gitlab_rails['smtp_password'] = {{ smtp_password }}
+{% endif %}
+gitlab_rails['smtp_domain'] = {{ smtp_domain }}
+gitlab_rails['smtp_authentication'] = {{ smtp_auth }}
+gitlab_rails['smtp_enable_starttls_auto'] = true
+gitlab_rails['smtp_tls'] = {{ smtp_tls }}
+{% endif %}
+
+
 ##! Redis settings
 #### Redis TCP connection
 gitlab_rails['redis_host'] = "{{ redis_host }}"
@@ -486,16 +502,6 @@ gitlab_rails['backup_keep_time'] = 1
 ### GitLab email server settings
 ###! Docs: https://docs.gitlab.com/omnibus/settings/smtp.html
 ###! **Use smtp instead of sendmail/postfix.**
-
-# gitlab_rails['smtp_enable'] = true
-# gitlab_rails['smtp_address'] = "smtp.server"
-# gitlab_rails['smtp_port'] = 465
-# gitlab_rails['smtp_user_name'] = "smtp user"
-# gitlab_rails['smtp_password'] = "smtp password"
-# gitlab_rails['smtp_domain'] = "example.com"
-# gitlab_rails['smtp_authentication'] = "login"
-# gitlab_rails['smtp_enable_starttls_auto'] = true
-# gitlab_rails['smtp_tls'] = false
 
 ###! **Can be: 'none', 'peer', 'client_once', 'fail_if_no_peer_cert'**
 ###! Docs: http://api.rubyonrails.org/classes/ActionMailer/Base.html

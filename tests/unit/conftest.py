@@ -8,14 +8,15 @@ import pytest
 import mock
 
 from charmhelpers.core import unitdata
+sys.modules['charms.layer'] = mock.Mock()
+sys.modules['reactive'] = mock.Mock()
+sys.modules["reactive.layer_backup"] = mock.Mock()
 
-# If layer options are used, add this to libgitlab
-# and import layer in libgitlab
+
 @pytest.fixture
 def mock_layers(monkeypatch):
     """Mock charm layer inclusion."""
     mock_layer_backup = mock.Mock()
-    sys.modules["reactive.layer_backup"] = mock_layer_backup
 
     monkeypatch.setattr("libgitlab.BackupHelper", mock_layer_backup)
     return {"layer_backup": mock_layer_backup}
@@ -123,11 +124,32 @@ def mock_gitlab_socket(monkeypatch):
 
 
 @pytest.fixture
-def mock_gitlab_fetch(monkeypatch):
-    """Mock fetch import on libgitlab."""
-    mock_fetch = mock.Mock()
-    monkeypatch.setattr("libgitlab.fetch", mock_fetch)
-    return mock_fetch
+def mock_apt_install(monkeypatch):
+    """Mock the charmhelper fetch apt_install method."""
+    mocked_apt_install = mock.Mock(returnvalue=True)
+    monkeypatch.setattr("libgitlab.apt_install", mocked_apt_install)
+    return mocked_apt_install
+
+
+@pytest.fixture
+def mock_apt_update(monkeypatch):
+    """Mock the charmhelpers fetch apt_update method."""
+    mocked_apt_update = mock.Mock(returnvalue=True)
+    monkeypatch.setattr("libgitlab.apt_update", mocked_apt_update)
+    return mocked_apt_update
+
+
+@pytest.fixture
+def mock_add_source(monkeypatch):
+    """Mock the charmhelpers fetch add_source method."""
+    def print_add_source(line, key):
+        print("Mocked add source: {} ({})".format(line, key))
+        return True
+
+    mocked_add_source = mock.Mock()
+    mocked_add_source.get.side_effect = print_add_source
+    monkeypatch.setattr("libgitlab.add_source", mocked_add_source)
+    return mocked_add_source
 
 
 @pytest.fixture
@@ -162,7 +184,9 @@ def libgitlab(
     mock_charm_dir,
     mock_upgrade_package,
     mock_gitlab_socket,
-    mock_gitlab_fetch,
+    mock_apt_install,
+    mock_apt_update,
+    mock_add_source,
     mock_template,
     mock_gitlab_subprocess,
     mock_unit_db,
