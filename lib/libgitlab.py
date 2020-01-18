@@ -11,7 +11,6 @@ except ImportError:
 import socket
 import subprocess
 
-from charmhelpers import fetch
 from charmhelpers.core import hookenv, host, templating, unitdata
 from charmhelpers.fetch import apt_install, apt_update, add_source, ubuntu_apt_pkg
 
