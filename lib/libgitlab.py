@@ -565,8 +565,7 @@ class GitlabHelper:
 
     def open_ports(self):
         """Open ports based on configuration."""
-        ports = ["80"]
-        ports.append(str(self.get_sshport()))
+        ports = ["80", "22"]
         opened_ports = hookenv.opened_ports()
         for open_port in opened_ports:
             port_no = open_port.split("/")[0]
