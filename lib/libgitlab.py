@@ -565,21 +565,23 @@ class GitlabHelper:
 
     def open_ports(self):
         """Open ports based on configuration."""
-        ports = ['80']
-        ports.append(self.get_sshport())
+        ports = ["80"]
+        ports.append(str(self.get_sshport()))
         opened_ports = hookenv.opened_ports()
         for open_port in opened_ports:
-            if open_port not in ports:
-                hookenv.close_port(open_port)
+            port_no = open_port.split("/")[0]
+            if port_no not in ports:
+                hookenv.close_port(port_no)
         for port in ports:
-            if port not in opened_ports:
+            if "{}/tcp".format(port) not in opened_ports:
                 hookenv.open_port(port)
 
     def close_ports(self):
         """Close all open ports."""
         opened_ports = hookenv.opened_ports()
         for open_port in opened_ports:
-            hookenv.close_port(open_port)
+            port_no = open_port.split("/")[0]
+            hookenv.close_port(port_no)
 
     def configure(self):
         """

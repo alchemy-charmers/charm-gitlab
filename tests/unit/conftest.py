@@ -72,7 +72,7 @@ def mock_close_port(monkeypatch):
 def mock_opened_ports(monkeypatch):
     """Mock the call to get opened ports."""
     def mock_opened_ports():
-        return ["2222", "80", "443"]
+        return ["2222/tcp", "80/tcp", "443/tcp"]
     mocked_opened_ports = mock.Mock()
     mocked_opened_ports.side_effect = mock_opened_ports
     monkeypatch.setattr("libgitlab.hookenv.opened_ports", mocked_opened_ports)
