@@ -563,6 +563,24 @@ class GitlabHelper:
             self.gitlab_reconfigure_run()
         return True
 
+    def open_ports(self):
+        """Open ports based on configuration."""
+        ports = ['80']
+        ports.append(self.get_sshport())
+        opened_ports = hookenv.opened_ports()
+        for open_port in opened_ports:
+            if open_port not in ports:
+                hookenv.close_port(open_port)
+        for port in ports:
+            if port not in opened_ports:
+                hookenv.open_port(port)
+
+    def close_ports(self):
+        """Close all open ports."""
+        opened_ports = hookenv.opened_ports()
+        for open_port in opened_ports:
+            hookenv.close_port(open_port)
+
     def configure(self):
         """
         Configure GitLab.
@@ -571,7 +589,10 @@ class GitlabHelper:
         runs the configuration routine to configure and start related services
         based on charm configuration and relation data.
         """
-        self.render_config()
+        if self.render_config():
+            self.open_ports()
+        else:
+            self.close_ports()
 
         # check for upgrades
         self.upgrade_gitlab()

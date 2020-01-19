@@ -73,6 +73,21 @@ def test_get_smtp_enabled(libgitlab, mock_gitlab_get_flag_value):
     assert result is True
 
 
+def test_ports(libgitlab, mock_open_port, mock_close_port, mock_opened_ports):
+    """Test ports are opened correctly."""
+    libgitlab.open_ports()
+    assert mock_opened_ports.call_count == 1
+    assert mock_open_port.call_count == 1
+    assert mock_close_port.call_count == 2
+    mock_open_port.assert_has_calls([call("22")])
+    mock_opened_ports.reset_mock()
+    mock_close_port.reset_mock()
+    libgitlab.close_ports()
+    assert mock_opened_ports.call_count == 1
+    assert mock_close_port.call_count == 3
+    mock_close_port.assert_has_calls([call("2222"), call("80"), call("443")])
+
+
 def test_configure_proxy(libgitlab):
     """Test configure_proxy."""
     # Test HTTP
