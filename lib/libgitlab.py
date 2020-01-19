@@ -14,7 +14,6 @@ import subprocess
 from charmhelpers.core import hookenv, host, templating, unitdata
 from charmhelpers.fetch import apt_install, apt_update, add_source, ubuntu_apt_pkg
 
-from charms.reactive.flags import _get_flag_value
 from charms.reactive.helpers import any_file_changed
 
 from reactive.layer_backup import Backup as BackupHelper
@@ -75,7 +74,7 @@ class GitlabHelper:
 
     def get_sshport(self):
         """Return the host used when configuring SSH access to GitLab."""
-        if _get_flag_value("reverseproxy.configured"):
+        if self.charm_config.get("ssh_port", None):
             return self.charm_config["ssh_port"]
         return "22"
 
