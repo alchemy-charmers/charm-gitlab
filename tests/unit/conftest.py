@@ -8,8 +8,9 @@ import pytest
 import mock
 
 from charmhelpers.core import unitdata
-sys.modules['charms.layer'] = mock.Mock()
-sys.modules['reactive'] = mock.Mock()
+
+sys.modules["charms.layer"] = mock.Mock()
+sys.modules["reactive"] = mock.Mock()
 sys.modules["reactive.layer_backup"] = mock.Mock()
 
 
@@ -25,6 +26,7 @@ def mock_layers(monkeypatch):
 @pytest.fixture
 def mock_hookenv_config(monkeypatch):
     """Mock charm hook environment items like charm configuration."""
+
     def mock_config():
         cfg = {}
         yml = yaml.safe_load(open("./config.yaml"))
@@ -71,12 +73,15 @@ def mock_close_port(monkeypatch):
 @pytest.fixture
 def mock_opened_ports(monkeypatch):
     """Mock the call to get opened ports."""
+
     def mock_opened_ports():
         return ["2222/tcp", "80/tcp", "443/tcp"]
+
     mocked_opened_ports = mock.Mock()
     mocked_opened_ports.side_effect = mock_opened_ports
     monkeypatch.setattr("libgitlab.hookenv.opened_ports", mocked_opened_ports)
     return mocked_opened_ports
+
 
 @pytest.fixture
 def mock_get_installed_version(monkeypatch):
@@ -104,6 +109,7 @@ def mock_upgrade_package(
 
     When a wildcard is provided the minor and patch are set to 1
     """
+
     def mock_upgrade(self, version=None):
         if version:
             sane_version = version.replace("*", "1.1")
@@ -168,6 +174,7 @@ def mock_apt_update(monkeypatch):
 @pytest.fixture
 def mock_add_source(monkeypatch):
     """Mock the charmhelpers fetch add_source method."""
+
     def print_add_source(line, key):
         print("Mocked add source: {} ({})".format(line, key))
         return True

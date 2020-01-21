@@ -417,13 +417,17 @@ def test_backup(libgitlab, mock_gitlab_subprocess, mock_layers):
     assert mock_gitlab_subprocess.check_output.call_count == 1
     assert mock_layers["layer_backup"].call_count == 1
 
+
 def test_render_config_fails_without_db(libgitlab, mock_gitlab_hookenv_log):
+    """Test render of configuration fails when DB is not configured."""
     assert libgitlab.render_config() is False
-    mock_gitlab_hookenv_log.assert_has_calls([
-        call("Skipping configuration due to missing DB config")
-    ])
+    mock_gitlab_hookenv_log.assert_has_calls(
+        [call("Skipping configuration due to missing DB config")]
+    )
+
 
 def test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log):
+    """Test render of configuration includes PostgreSQL configuration when present in KV store."""
     # Configure postgresql
     libgitlab.kv.set("pgsql_host", "host")
     libgitlab.kv.set("pgsql_port", "port")
@@ -432,11 +436,11 @@ def test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log):
     libgitlab.kv.set("pgsql_pass", "pass")
 
     assert libgitlab.render_config() is True
-    mock_gitlab_hookenv_log.assert_has_calls([
-        call("PostgreSQL is related and configured in the charm KV store", "DEBUG")
-    ])
+    mock_gitlab_hookenv_log.assert_has_calls(
+        [call("PostgreSQL is related and configured in the charm KV store", "DEBUG")]
+    )
 
-    with open(libgitlab.gitlab_config, 'r') as f:
+    with open(libgitlab.gitlab_config, "r") as f:
         config_lines = f.read().splitlines()
 
     # Assert that postgresql was properly configured in gitlab config
@@ -449,15 +453,17 @@ def test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log):
 
 
 def test_render_smtp_settings_not_enabled(libgitlab, mock_gitlab_hookenv_log):
+    """Test render of configuration prior to SMTP being configured."""
     test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
 
-    with open(libgitlab.gitlab_config, 'r') as f:
+    with open(libgitlab.gitlab_config, "r") as f:
         config_lines = f.read().splitlines()
 
     assert not any((l.startswith("gitlab_rails['smtp") for l in config_lines))
 
 
 def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
+    """Test render of configuration when SMTP is configured without login setting."""
     libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
     libgitlab.charm_config["smtp_port"] = 123
     libgitlab.charm_config["smtp_domain"] = "domain.smtp.server"
@@ -466,7 +472,7 @@ def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
 
     test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
 
-    with open(libgitlab.gitlab_config, 'r') as f:
+    with open(libgitlab.gitlab_config, "r") as f:
         config_lines = f.read().splitlines()
 
     # Assert that smtp was properly configured in gitlab config
@@ -478,11 +484,16 @@ def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
     assert "gitlab_rails['smtp_enable_starttls_auto'] = true" in config_lines
     assert "gitlab_rails['smtp_tls'] = true" in config_lines
 
-    assert not any((l.startswith("gitlab_rails['smtp_user_name']") for l in config_lines))
-    assert not any((l.startswith("gitlab_rails['smtp_password']") for l in config_lines))
+    assert not any(
+        (l.startswith("gitlab_rails['smtp_user_name']") for l in config_lines)
+    )
+    assert not any(
+        (l.startswith("gitlab_rails['smtp_password']") for l in config_lines)
+    )
 
 
 def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
+    """Test render of configuration when SMTP is configured with login setting."""
     libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
     libgitlab.charm_config["smtp_port"] = 123
     libgitlab.charm_config["smtp_user"] = "user"
@@ -493,7 +504,7 @@ def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
 
     test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
 
-    with open(libgitlab.gitlab_config, 'r') as f:
+    with open(libgitlab.gitlab_config, "r") as f:
         config_lines = f.read().splitlines()
 
     # Assert that smtp was properly configured in gitlab config
