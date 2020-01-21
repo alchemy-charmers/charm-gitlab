@@ -535,7 +535,7 @@ class GitlabHelper:
                     "db_port": self.kv.get("db_port"),
                     "db_database": self.kv.get("db_db"),
                     "db_user": self.kv.get("db_user"),
-                    "db_password": self.kv.get("mysql_pass"),
+                    "db_password": self.kv.get("db_pass"),
                     "redis_host": self.kv.get("redis_host"),
                     "redis_port": self.kv.get("redis_port"),
                     "http_port": self.charm_config["http_port"],

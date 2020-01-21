@@ -2,6 +2,7 @@
 """Test helper library usage."""
 
 import mock
+import pytest
 
 from charmhelpers.core import unitdata
 from mock import call
@@ -428,41 +429,31 @@ def test_render_config_fails_without_db(libgitlab, mock_gitlab_hookenv_log):
 
 def test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log):
     """Test render of configuration includes PostgreSQL configuration when present in KV store."""
-    # Configure postgresql
-    libgitlab.kv.set("pgsql_host", "host")
-    libgitlab.kv.set("pgsql_port", "port")
-    libgitlab.kv.set("pgsql_db", "db")
-    libgitlab.kv.set("pgsql_user", "user")
-    libgitlab.kv.set("pgsql_pass", "pass")
-
-    assert libgitlab.render_config() is True
+    _rendered_config("pgsql", libgitlab)
     mock_gitlab_hookenv_log.assert_has_calls(
         [call("PostgreSQL is related and configured in the charm KV store", "DEBUG")]
     )
 
-    with open(libgitlab.gitlab_config, "r") as f:
-        config_lines = f.read().splitlines()
 
-    # Assert that postgresql was properly configured in gitlab config
-    assert "gitlab_rails['db_adapter'] = \"postgresql\"" in config_lines
-    assert "gitlab_rails['db_host'] = \"host\"" in config_lines
-    assert "gitlab_rails['db_port'] = \"port\"" in config_lines
-    assert "gitlab_rails['db_database'] = \"db\"" in config_lines
-    assert "gitlab_rails['db_username'] = \"user\"" in config_lines
-    assert "gitlab_rails['db_password'] = \"pass\"" in config_lines
+def test_render_mysql_config(libgitlab):
+    """Test render of configuration includes MySQL configuration when present in KV store."""
+    _rendered_config("mysql", libgitlab)
 
 
-def test_render_smtp_settings_not_enabled(libgitlab, mock_gitlab_hookenv_log):
+def test_render_legacy_database_config(libgitlab):
+    """Test render of configuration includes legacy MySQL configuration when present in KV store."""
+    _rendered_config("legacy", libgitlab)
+
+
+@pytest.mark.parametrize("database_type", ("pgsql", "mysql", "legacy"))
+def test_render_smtp_settings_not_enabled(database_type, libgitlab):
     """Test render of configuration prior to SMTP being configured."""
-    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
-
-    with open(libgitlab.gitlab_config, "r") as f:
-        config_lines = f.read().splitlines()
-
+    config_lines = _rendered_config(database_type, libgitlab)
     assert not any((l.startswith("gitlab_rails['smtp") for l in config_lines))
 
 
-def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
+@pytest.mark.parametrize("database_type", ("pgsql", "mysql", "legacy"))
+def test_render_smtp_settings_without_login(database_type, libgitlab):
     """Test render of configuration when SMTP is configured without login setting."""
     libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
     libgitlab.charm_config["smtp_port"] = 123
@@ -470,10 +461,7 @@ def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
     libgitlab.charm_config["smtp_authentication"] = "plain"
     libgitlab.charm_config["smtp_tls"] = True
 
-    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
-
-    with open(libgitlab.gitlab_config, "r") as f:
-        config_lines = f.read().splitlines()
+    config_lines = _rendered_config(database_type, libgitlab)
 
     # Assert that smtp was properly configured in gitlab config
     assert "gitlab_rails['smtp_enable'] = true" in config_lines
@@ -492,7 +480,8 @@ def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
     )
 
 
-def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
+@pytest.mark.parametrize("database_type", ("pgsql", "mysql", "legacy"))
+def test_render_smtp_settings_with_login(database_type, libgitlab):
     """Test render of configuration when SMTP is configured with login setting."""
     libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
     libgitlab.charm_config["smtp_port"] = 123
@@ -502,10 +491,7 @@ def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
     libgitlab.charm_config["smtp_authentication"] = "plain"
     libgitlab.charm_config["smtp_tls"] = True
 
-    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
-
-    with open(libgitlab.gitlab_config, "r") as f:
-        config_lines = f.read().splitlines()
+    config_lines = _rendered_config(database_type, libgitlab)
 
     # Assert that smtp was properly configured in gitlab config
     assert "gitlab_rails['smtp_enable'] = true" in config_lines
@@ -517,3 +503,61 @@ def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
     assert "gitlab_rails['smtp_authentication'] = \"plain\"" in config_lines
     assert "gitlab_rails['smtp_enable_starttls_auto'] = true" in config_lines
     assert "gitlab_rails['smtp_tls'] = true" in config_lines
+
+
+def _rendered_config(database_type, libgitlab):
+    _configure_database(database_type, libgitlab)
+
+    assert libgitlab.render_config() is True
+    with open(libgitlab.gitlab_config, 'r') as f:
+        config_lines = f.read().splitlines()
+
+    _assert_database_rendered(database_type, config_lines)
+    return config_lines
+
+
+def _configure_database(database_type, libgitlab):
+    if database_type == "pgsql":
+        # Configure postgresql
+        libgitlab.kv.set("pgsql_host", "host")
+        libgitlab.kv.set("pgsql_port", "port")
+        libgitlab.kv.set("pgsql_db", "db")
+        libgitlab.kv.set("pgsql_user", "user")
+        libgitlab.kv.set("pgsql_pass", "pass")
+    elif database_type == "mysql":
+        # Configure mysql
+        libgitlab.kv.set("mysql_host", "host")
+        libgitlab.kv.set("mysql_port", "port")
+        libgitlab.kv.set("mysql_db", "db")
+        libgitlab.kv.set("mysql_user", "user")
+        libgitlab.kv.set("mysql_pass", "pass")
+    elif database_type == "legacy":
+        # Configure legacy database
+        libgitlab.kv.set("db_host", "host")
+        libgitlab.kv.set("db_port", "port")
+        libgitlab.kv.set("db_db", "db")
+        libgitlab.kv.set("db_user", "user")
+        libgitlab.kv.set("db_pass", "pass")
+    else:
+        pytest.fail("Unsupported database type: {}".format(database_type))
+
+
+def _assert_database_rendered(database_type, config_lines):
+    if database_type == "pgsql":
+        # Assert that postgresql was properly configured in gitlab config
+        assert "gitlab_rails['db_adapter'] = \"postgresql\"" in config_lines
+        assert "gitlab_rails['db_host'] = \"host\"" in config_lines
+        assert "gitlab_rails['db_port'] = \"port\"" in config_lines
+        assert "gitlab_rails['db_database'] = \"db\"" in config_lines
+        assert "gitlab_rails['db_username'] = \"user\"" in config_lines
+        assert "gitlab_rails['db_password'] = \"pass\"" in config_lines
+    elif database_type in ("mysql", "legacy"):
+        # Assert that mysql (or legacy database) was properly configured in gitlab config
+        assert "gitlab_rails['db_adapter'] = \"mysql2\"" in config_lines
+        assert "gitlab_rails['db_host'] = \"host\"" in config_lines
+        assert "gitlab_rails['db_port'] = \"port\"" in config_lines
+        assert "gitlab_rails['db_database'] = \"db\"" in config_lines
+        assert "gitlab_rails['db_username'] = \"user\"" in config_lines
+        assert "gitlab_rails['db_password'] = \"pass\"" in config_lines
+    else:
+        pytest.fail("Unsupported database type: {}".format(database_type))
