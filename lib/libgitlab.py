@@ -495,6 +495,9 @@ class GitlabHelper:
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
                     "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
+                    "email_from": self.charm_config.get("email_from"),
+                    "email_display_name": self.charm_config.get("email_display_name"),
+                    "email_reply_to": self.charm_config.get("email_reply_to"),
                     "url": self.get_external_uri(),
                 },
             )
@@ -522,6 +525,9 @@ class GitlabHelper:
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
                     "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
+                    "email_from": self.charm_config.get("email_from"),
+                    "email_display_name": self.charm_config.get("email_display_name"),
+                    "email_reply_to": self.charm_config.get("email_reply_to"),
                     "url": self.get_external_uri(),
                 },
             )
@@ -549,6 +555,9 @@ class GitlabHelper:
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
                     "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
+                    "email_from": self.charm_config.get("email_from"),
+                    "email_display_name": self.charm_config.get("email_display_name"),
+                    "email_reply_to": self.charm_config.get("email_reply_to"),
                     "url": self.get_external_uri(),
                 },
             )
