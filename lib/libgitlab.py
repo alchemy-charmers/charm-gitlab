@@ -494,7 +494,7 @@ class GitlabHelper:
                     "smtp_password": self.charm_config.get("smtp_password"),
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
-                    "smtp_tls": self.charm_config.get("smtp_tls"),
+                    "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
                     "url": self.get_external_uri(),
                 },
             )
@@ -521,7 +521,7 @@ class GitlabHelper:
                     "smtp_password": self.charm_config.get("smtp_password"),
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
-                    "smtp_tls": self.charm_config.get("smtp_tls"),
+                    "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
                     "url": self.get_external_uri(),
                 },
             )
@@ -548,7 +548,7 @@ class GitlabHelper:
                     "smtp_password": self.charm_config.get("smtp_password"),
                     "smtp_domain": self.get_smtp_domain(),
                     "smtp_authentication": self.charm_config.get("smtp_authentication"),
-                    "smtp_tls": self.charm_config.get("smtp_tls"),
+                    "smtp_tls": str(self.charm_config.get("smtp_tls")).lower(),
                     "url": self.get_external_uri(),
                 },
             )
