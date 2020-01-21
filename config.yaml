@@ -54,7 +54,7 @@ options:
   smtp_domain:
     type: string
     default: ""
-    description: "The domain to use when sending email from GitLab. Will default to the server name, influenced by the external URL configured."
+    description: "HELO domain. Will default to the server name, influenced by the external URL configured."
   smtp_authentication:
     type: string
     default: "login"
