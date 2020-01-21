@@ -29,7 +29,7 @@ gitlab_rails['smtp_user_name'] = "{{ smtp_user }}"
 gitlab_rails['smtp_password'] = "{{ smtp_password }}"
 {% endif %}
 gitlab_rails['smtp_domain'] = "{{ smtp_domain }}"
-gitlab_rails['smtp_authentication'] = "{{ smtp_auth }}"
+gitlab_rails['smtp_authentication'] = "{{ smtp_authentication }}"
 gitlab_rails['smtp_enable_starttls_auto'] = true
 gitlab_rails['smtp_tls'] = "{{ smtp_tls }}"
 {% endif %}
@@ -56,7 +56,7 @@ letsencrypt['enable'] = false
 mattermost['enable'] = false
 # we let prometheus charms take care of this
 prometheus['enable'] = false
-alertmanager['enable'] = false 
+alertmanager['enable'] = false
 node_exporter['enable'] = false
 redis_exporter['enable'] = false
 

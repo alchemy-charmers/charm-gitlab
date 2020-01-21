@@ -55,7 +55,7 @@ options:
     type: string
     default: ""
     description: "The domain to use when sending email from GitLab. Will default to the server name, influenced by the external URL configured."
-  smtp_auth_method:
+  smtp_authentication:
     type: string
     default: "login"
     description: "Used to override the authentication method to use when external SMTP is in use."
