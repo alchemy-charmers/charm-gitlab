@@ -505,6 +505,41 @@ def test_render_smtp_settings_with_login(database_type, libgitlab):
     assert "gitlab_rails['smtp_tls'] = true" in config_lines
 
 
+@pytest.mark.parametrize("database_type", ("pgsql", "mysql", "legacy"))
+@pytest.mark.parametrize("email_from", ("test@example.com", ""))
+@pytest.mark.parametrize("email_display_name", ("name", ""))
+@pytest.mark.parametrize("email_reply_to", ("noreply@example.com", ""))
+def test_render_email_settings(database_type, email_from, email_display_name, email_reply_to, libgitlab):
+    """Test render of configuration when email settings are configured."""
+    libgitlab.charm_config["email_from"] = email_from
+    libgitlab.charm_config["email_display_name"] = email_display_name
+    libgitlab.charm_config["email_reply_to"] = email_reply_to
+
+    config_lines = _rendered_config(database_type, libgitlab)
+
+    # Assert that email options were properly configured in gitlab config
+    if email_from:
+        assert "gitlab_rails['gitlab_email_from'] = '{}'".format(email_from) in config_lines
+    else:
+        assert not any(
+            (l.startswith("gitlab_rails['gitlab_email_from']") for l in config_lines)
+        )
+
+    if email_display_name:
+        assert "gitlab_rails['gitlab_email_display_name'] = '{}'".format(email_display_name) in config_lines
+    else:
+        assert not any(
+            (l.startswith("gitlab_rails['gitlab_email_display_name']") for l in config_lines)
+        )
+
+    if email_reply_to:
+        assert "gitlab_rails['gitlab_email_reply_to'] = '{}'".format(email_reply_to) in config_lines
+    else:
+        assert not any(
+            (l.startswith("gitlab_rails['gitlab_email_reply_to']") for l in config_lines)
+        )
+
+
 def _rendered_config(database_type, libgitlab):
     _configure_database(database_type, libgitlab)
 

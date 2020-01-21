@@ -34,6 +34,16 @@ gitlab_rails['smtp_enable_starttls_auto'] = true
 gitlab_rails['smtp_tls'] = {{ smtp_tls }}
 {% endif %}
 
+##! Email settings
+{% if email_from %}
+gitlab_rails['gitlab_email_from'] = '{{ email_from }}'
+{% endif %}
+{% if email_display_name %}
+gitlab_rails['gitlab_email_display_name'] = '{{ email_display_name }}'
+{% endif %}
+{% if email_reply_to %}
+gitlab_rails['gitlab_email_reply_to'] = '{{ email_reply_to }}'
+{% endif %}
 
 ##! Redis settings
 #### Redis TCP connection

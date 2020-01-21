@@ -63,3 +63,15 @@ options:
     type: boolean
     default: false
     description: "Set this to true to enable TLS when connecting to the configured external SMTP server."
+  email_from:
+    type: string
+    default: ""
+    description: "Email address from which gitlab will send email. Defaults to gitlab@external_url."
+  email_display_name:
+    type: string
+    default: ""
+    description: "Display name for emails from gitlab. Defaults to GitLab"
+  email_reply_to:
+    type: string
+    default: ""
+    description: "Email address to be used as reply-to for emails from gitlab. Defaults to noreply@external_url."
