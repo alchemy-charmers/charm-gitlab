@@ -416,3 +416,93 @@ def test_backup(libgitlab, mock_gitlab_subprocess, mock_layers):
     libgitlab.backup()
     assert mock_gitlab_subprocess.check_output.call_count == 1
     assert mock_layers["layer_backup"].call_count == 1
+
+def test_render_config_fails_without_db(libgitlab, mock_gitlab_hookenv_log):
+    assert libgitlab.render_config() is False
+    mock_gitlab_hookenv_log.assert_has_calls([
+        call("Skipping configuration due to missing DB config")
+    ])
+
+def test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log):
+    # Configure postgresql
+    libgitlab.kv.set("pgsql_host", "host")
+    libgitlab.kv.set("pgsql_port", "port")
+    libgitlab.kv.set("pgsql_db", "db")
+    libgitlab.kv.set("pgsql_user", "user")
+    libgitlab.kv.set("pgsql_pass", "pass")
+
+    assert libgitlab.render_config() is True
+    mock_gitlab_hookenv_log.assert_has_calls([
+        call("PostgreSQL is related and configured in the charm KV store", "DEBUG")
+    ])
+
+    with open(libgitlab.gitlab_config, 'r') as f:
+        config_lines = f.read().splitlines()
+
+    # Assert that postgresql was properly configured in gitlab config
+    assert "gitlab_rails['db_adapter'] = \"postgresql\"" in config_lines
+    assert "gitlab_rails['db_host'] = \"host\"" in config_lines
+    assert "gitlab_rails['db_port'] = \"port\"" in config_lines
+    assert "gitlab_rails['db_database'] = \"db\"" in config_lines
+    assert "gitlab_rails['db_username'] = \"user\"" in config_lines
+    assert "gitlab_rails['db_password'] = \"pass\"" in config_lines
+
+
+def test_render_smtp_settings_not_enabled(libgitlab, mock_gitlab_hookenv_log):
+    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
+
+    with open(libgitlab.gitlab_config, 'r') as f:
+        config_lines = f.read().splitlines()
+
+    assert not any((l.startswith("gitlab_rails['smtp") for l in config_lines))
+
+
+def test_render_smtp_settings_without_login(libgitlab, mock_gitlab_hookenv_log):
+    libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
+    libgitlab.charm_config["smtp_port"] = 123
+    libgitlab.charm_config["smtp_domain"] = "domain.smtp.server"
+    libgitlab.charm_config["smtp_authentication"] = "plain"
+    libgitlab.charm_config["smtp_tls"] = True
+
+    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
+
+    with open(libgitlab.gitlab_config, 'r') as f:
+        config_lines = f.read().splitlines()
+
+    # Assert that smtp was properly configured in gitlab config
+    assert "gitlab_rails['smtp_enable'] = true" in config_lines
+    assert "gitlab_rails['smtp_address'] = \"mocked.smtp.server\"" in config_lines
+    assert "gitlab_rails['smtp_port'] = \"123\"" in config_lines
+    assert "gitlab_rails['smtp_domain'] = \"domain.smtp.server\"" in config_lines
+    assert "gitlab_rails['smtp_authentication'] = \"plain\"" in config_lines
+    assert "gitlab_rails['smtp_enable_starttls_auto'] = true" in config_lines
+    assert "gitlab_rails['smtp_tls'] = true" in config_lines
+
+    assert not any((l.startswith("gitlab_rails['smtp_user_name']") for l in config_lines))
+    assert not any((l.startswith("gitlab_rails['smtp_password']") for l in config_lines))
+
+
+def test_render_smtp_settings_with_login(libgitlab, mock_gitlab_hookenv_log):
+    libgitlab.charm_config["smtp_server"] = "mocked.smtp.server"
+    libgitlab.charm_config["smtp_port"] = 123
+    libgitlab.charm_config["smtp_user"] = "user"
+    libgitlab.charm_config["smtp_password"] = "password"
+    libgitlab.charm_config["smtp_domain"] = "domain.smtp.server"
+    libgitlab.charm_config["smtp_authentication"] = "plain"
+    libgitlab.charm_config["smtp_tls"] = True
+
+    test_render_pgsql_config(libgitlab, mock_gitlab_hookenv_log)
+
+    with open(libgitlab.gitlab_config, 'r') as f:
+        config_lines = f.read().splitlines()
+
+    # Assert that smtp was properly configured in gitlab config
+    assert "gitlab_rails['smtp_enable'] = true" in config_lines
+    assert "gitlab_rails['smtp_address'] = \"mocked.smtp.server\"" in config_lines
+    assert "gitlab_rails['smtp_port'] = \"123\"" in config_lines
+    assert "gitlab_rails['smtp_user_name'] = \"user\"" in config_lines
+    assert "gitlab_rails['smtp_password'] = \"password\"" in config_lines
+    assert "gitlab_rails['smtp_domain'] = \"domain.smtp.server\"" in config_lines
+    assert "gitlab_rails['smtp_authentication'] = \"plain\"" in config_lines
+    assert "gitlab_rails['smtp_enable_starttls_auto'] = true" in config_lines
+    assert "gitlab_rails['smtp_tls'] = true" in config_lines
