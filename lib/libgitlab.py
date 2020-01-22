@@ -77,7 +77,7 @@ class GitlabHelper:
         """Return the host used when configuring SSH access to GitLab."""
         if _get_flag_value("reverseproxy.configured"):
             return self.charm_config["ssh_port"]
-        return "22"
+        return self.charm_config["ssh_port_internal"]
 
     def get_smtp_enabled(self):
         """Return True if all configuration is in place for external SMTP usage."""
@@ -119,7 +119,7 @@ class GitlabHelper:
                 "mode": "tcp",
                 "external_port": self.charm_config["ssh_port"],
                 "internal_host": internal_host,
-                "internal_port": 22,
+                "internal_port": self.charm_config["ssh_port_internal"],
             },
         ]
         proxy.configure(proxy_config)
@@ -574,7 +574,7 @@ class GitlabHelper:
 
     def open_ports(self):
         """Open ports based on configuration."""
-        ports = ["80", "22"]
+        ports = ["80", str(self.charm_config["ssh_port_internal"])]
         opened_ports = hookenv.opened_ports()
         for open_port in opened_ports:
             port_no = open_port.split("/")[0]
