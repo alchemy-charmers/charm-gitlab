@@ -60,12 +60,12 @@ def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
     """Test get_sshport."""
     result = libgitlab.get_sshport()
     assert result == 22
-    libgitlab.charm_config["ssh_port_internal"] = 922
-    result = libgitlab.get_sshport()
-    assert result == libgitlab.charm_config["ssh_port_internal"]
-    mock_gitlab_get_flag_value.return_value = True
+    libgitlab.charm_config["ssh_port"] = 922
     result = libgitlab.get_sshport()
     assert result == libgitlab.charm_config["ssh_port"]
+    mock_gitlab_get_flag_value.return_value = True
+    result = libgitlab.get_sshport()
+    assert result == libgitlab.charm_config["proxy_ssh_port"]
 
 
 def test_get_smtp_enabled(libgitlab, mock_gitlab_get_flag_value):
@@ -93,14 +93,14 @@ def test_ports(libgitlab, mock_open_port, mock_close_port, mock_opened_ports):
 
 
 @pytest.mark.parametrize("external_url", ("https://mock.example.com", ""))
-@pytest.mark.parametrize("ssh_port", (222, 2222))
-@pytest.mark.parametrize("ssh_port_internal", (22, 922))
-def test_configure_proxy(libgitlab, external_url, ssh_port, ssh_port_internal):
+@pytest.mark.parametrize("proxy_ssh_port", (222, 2222))
+@pytest.mark.parametrize("ssh_port", (22, 922))
+def test_configure_proxy(libgitlab, external_url, proxy_ssh_port, ssh_port):
     """Test configure_proxy."""
     mock_proxy = mock.Mock()
     libgitlab.charm_config["external_url"] = external_url
+    libgitlab.charm_config["proxy_ssh_port"] = proxy_ssh_port
     libgitlab.charm_config["ssh_port"] = ssh_port
-    libgitlab.charm_config["ssh_port_internal"] = ssh_port_internal
     libgitlab.configure_proxy(mock_proxy)
 
     expected_external_http_port = 80
@@ -119,9 +119,9 @@ def test_configure_proxy(libgitlab, external_url, ssh_port, ssh_port_internal):
             },
             {
                 "mode": "tcp",
-                "external_port": ssh_port,
+                "external_port": proxy_ssh_port,
                 "internal_host": "mock.example.com",
-                "internal_port": ssh_port_internal,
+                "internal_port": ssh_port,
             },
         ]
     )

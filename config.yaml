@@ -19,11 +19,11 @@ options:
     type: int
     default: 80
     description: "The HTTP port the GitLab backend will listen for connections on. It is recommended to relate this charm to a reverse proxy, rather than customising this value"
-  ssh_port:
+  proxy_ssh_port:
     type: int
     default: 222
-    description: "The external TCP port over which SSH-based git clone operations will be available, when GitLab is related to an external load balancer via the reverseproxy relation. Without a reverseproxy relation, ssh_port_internal is used."
-  ssh_port_internal:
+    description: "The external TCP port over which SSH-based git clone operations will be available, when GitLab is related to an external load balancer via the reverseproxy relation. Without a reverseproxy relation, ssh_port is used."
+  ssh_port:
     type: int
     default: 22
     description: "The internal TCP port on which SSH-based git clone operations will be available. Port 22 by default."
