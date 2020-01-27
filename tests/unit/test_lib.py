@@ -59,10 +59,13 @@ def test_get_sshhost(libgitlab):
 def test_get_sshport(libgitlab, mock_gitlab_get_flag_value):
     """Test get_sshport."""
     result = libgitlab.get_sshport()
-    assert result == "22"
-    mock_gitlab_get_flag_value.return_value = True
+    assert result == 22
+    libgitlab.charm_config["ssh_port"] = 922
     result = libgitlab.get_sshport()
     assert result == libgitlab.charm_config["ssh_port"]
+    mock_gitlab_get_flag_value.return_value = True
+    result = libgitlab.get_sshport()
+    assert result == libgitlab.charm_config["proxy_ssh_port"]
 
 
 def test_get_smtp_enabled(libgitlab, mock_gitlab_get_flag_value):
@@ -89,49 +92,36 @@ def test_ports(libgitlab, mock_open_port, mock_close_port, mock_opened_ports):
     mock_close_port.assert_has_calls([call("2222"), call("80"), call("443")])
 
 
-def test_configure_proxy(libgitlab):
+@pytest.mark.parametrize("external_url", ("https://mock.example.com", ""))
+@pytest.mark.parametrize("proxy_ssh_port", (222, 2222))
+@pytest.mark.parametrize("ssh_port", (22, 922))
+def test_configure_proxy(libgitlab, external_url, proxy_ssh_port, ssh_port):
     """Test configure_proxy."""
-    # Test HTTP
     mock_proxy = mock.Mock()
+    libgitlab.charm_config["external_url"] = external_url
+    libgitlab.charm_config["proxy_ssh_port"] = proxy_ssh_port
+    libgitlab.charm_config["ssh_port"] = ssh_port
     libgitlab.configure_proxy(mock_proxy)
-    assert mock_proxy.configure.called
-    assert mock_proxy.configure.call_args == call(
-        [
-            {
-                "mode": "http",
-                "external_port": 80,
-                "internal_host": "mock.example.com",
-                "internal_port": 80,
-                "subdomain": "mock.example.com",
-            },
-            {
-                "mode": "tcp",
-                "external_port": 222,
-                "internal_host": "mock.example.com",
-                "internal_port": 22,
-            },
-        ]
-    )
 
-    # Test HTTPS
-    mock_proxy.reset_mock()
-    libgitlab.charm_config["external_url"] = "https://mock.example.com"
-    libgitlab.configure_proxy(mock_proxy)
+    expected_external_http_port = 80
+    if external_url.startswith("https"):
+        expected_external_http_port = 443
+
     assert mock_proxy.configure.called
     assert mock_proxy.configure.call_args == call(
         [
             {
                 "mode": "http",
-                "external_port": 443,
+                "external_port": expected_external_http_port,
                 "internal_host": "mock.example.com",
                 "internal_port": 80,
                 "subdomain": "mock.example.com",
             },
             {
                 "mode": "tcp",
-                "external_port": 222,
+                "external_port": proxy_ssh_port,
                 "internal_host": "mock.example.com",
-                "internal_port": 22,
+                "internal_port": ssh_port,
             },
         ]
     )
