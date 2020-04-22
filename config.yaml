@@ -5,7 +5,7 @@ options:
     description: "The version of GitLab to install. Defaults (when this setting is empty) to latest."
   apt_key:
     type: string
-    default: "14219A96E15E78F4"
+    default: "3F01618A51312F3F"
     description: "The APT signing key used for the repository specified by apt_repo"
   apt_repo:
     type: string
