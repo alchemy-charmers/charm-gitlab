@@ -91,6 +91,18 @@ to migrations requiring newer schema primitives.
 
 The tested migration path with the charms is as such:
 
+*NOTE*: Until GitLab fixes [5391](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5391) properly:
+
+Your app and DB servers (gitlab unit and postgresql unit) should both be upgraded to Ubuntu 20.04
+
+You need to work around the `pg_dump` version used by GitLab
+
+On the application server, after following the below instructions, before the final upgrade, upgrade your application unit to focal using `juju upgrade-series <machine ID> prepare` and then doing a do-release upgrade to foacl, followed by `juju upgrade-series <machine ID> complete`
+ 
+ You will then need to install `postgresql-client-12` and run `sudo ln -s /usr/lib/postgresql/12/bin/pg_dump /opt/gitlab/bin/pg_dump`
+
+Process:
+
 Take a full GitLab backup:
  * Access your gitlab unit via SSH: `juju ssh gitlab/0`
  * Run the backup: `gitlab-backup`
@@ -114,6 +126,8 @@ Migrate the database to the new PostgreSQL
 Re-relate GitLab
  * Remove old relation: `juju remove-relation gitlab postgresql:db-admin`
  * Add new relation: `juju add-relation gitlab postgresql12:db-admin`
+ * If your units are not both on Ubuntu focal, and you are using PostgreSQL 12, make sure you follow the
+   steps in the note above to work around [5391](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5391) 
  * Run an upgrade of GitLab: `juju run-action --wait gitlab/0 upgrade`
 
 # Contact Information
