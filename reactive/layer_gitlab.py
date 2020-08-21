@@ -4,20 +4,9 @@ import socket
 import subprocess
 
 from charmhelpers.core import hookenv
-
-from charms.reactive import (
-    clear_flag,
-    endpoint_from_flag,
-    endpoint_from_name,
-    is_flag_set,
-    set_flag,
-    when,
-    when_all,
-    when_any,
-    when_none,
-    when_not,
-)
-
+from charms.reactive import (clear_flag, endpoint_from_flag,
+                             endpoint_from_name, is_flag_set, set_flag, when,
+                             when_all, when_any, when_none, when_not)
 from libgitlab import GitlabHelper
 
 gitlab = GitlabHelper()
@@ -207,7 +196,7 @@ def get_runner_token():
         "runner",
         "-e",
         "production",
-        "STDOUT.write Gitlab::CurrentSettings.current_application_settings.runners_registration_token"
+        "STDOUT.write Gitlab::CurrentSettings.current_application_settings.runners_registration_token",
     ]
     token = subprocess.check_output(cmd)
     return token.decode("utf-8")

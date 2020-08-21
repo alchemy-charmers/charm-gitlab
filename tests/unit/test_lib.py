@@ -3,7 +3,6 @@
 
 import mock
 import pytest
-
 from charmhelpers.core import unitdata
 from mock import call
 
@@ -439,7 +438,7 @@ def test_render_legacy_database_config(libgitlab):
 def test_render_smtp_settings_not_enabled(database_type, libgitlab):
     """Test render of configuration prior to SMTP being configured."""
     config_lines = _rendered_config(database_type, libgitlab)
-    assert not any((l.startswith("gitlab_rails['smtp") for l in config_lines))
+    assert not any((line.startswith("gitlab_rails['smtp") for line in config_lines))
 
 
 @pytest.mark.parametrize("database_type", ("pgsql", "mysql", "legacy"))
@@ -463,10 +462,10 @@ def test_render_smtp_settings_without_login(database_type, libgitlab):
     assert "gitlab_rails['smtp_tls'] = true" in config_lines
 
     assert not any(
-        (l.startswith("gitlab_rails['smtp_user_name']") for l in config_lines)
+        (line.startswith("gitlab_rails['smtp_user_name']") for line in config_lines)
     )
     assert not any(
-        (l.startswith("gitlab_rails['smtp_password']") for l in config_lines)
+        (line.startswith("gitlab_rails['smtp_password']") for line in config_lines)
     )
 
 
@@ -499,7 +498,9 @@ def test_render_smtp_settings_with_login(database_type, libgitlab):
 @pytest.mark.parametrize("email_from", ("test@example.com", ""))
 @pytest.mark.parametrize("email_display_name", ("name", ""))
 @pytest.mark.parametrize("email_reply_to", ("noreply@example.com", ""))
-def test_render_email_settings(database_type, email_from, email_display_name, email_reply_to, libgitlab):
+def test_render_email_settings(
+    database_type, email_from, email_display_name, email_reply_to, libgitlab
+):
     """Test render of configuration when email settings are configured."""
     libgitlab.charm_config["email_from"] = email_from
     libgitlab.charm_config["email_display_name"] = email_display_name
@@ -509,24 +510,41 @@ def test_render_email_settings(database_type, email_from, email_display_name, em
 
     # Assert that email options were properly configured in gitlab config
     if email_from:
-        assert "gitlab_rails['gitlab_email_from'] = '{}'".format(email_from) in config_lines
+        assert (
+            "gitlab_rails['gitlab_email_from'] = '{}'".format(email_from)
+            in config_lines
+        )
     else:
         assert not any(
-            (l.startswith("gitlab_rails['gitlab_email_from']") for l in config_lines)
+            (line.startswith("gitlab_rails['gitlab_email_from']") for line in config_lines)
         )
 
     if email_display_name:
-        assert "gitlab_rails['gitlab_email_display_name'] = '{}'".format(email_display_name) in config_lines
+        assert (
+            "gitlab_rails['gitlab_email_display_name'] = '{}'".format(
+                email_display_name
+            )
+            in config_lines
+        )
     else:
         assert not any(
-            (l.startswith("gitlab_rails['gitlab_email_display_name']") for l in config_lines)
+            (
+                line.startswith("gitlab_rails['gitlab_email_display_name']")
+                for line in config_lines
+            )
         )
 
     if email_reply_to:
-        assert "gitlab_rails['gitlab_email_reply_to'] = '{}'".format(email_reply_to) in config_lines
+        assert (
+            "gitlab_rails['gitlab_email_reply_to'] = '{}'".format(email_reply_to)
+            in config_lines
+        )
     else:
         assert not any(
-            (l.startswith("gitlab_rails['gitlab_email_reply_to']") for l in config_lines)
+            (
+                line.startswith("gitlab_rails['gitlab_email_reply_to']")
+                for line in config_lines
+            )
         )
 
 
@@ -534,7 +552,7 @@ def _rendered_config(database_type, libgitlab):
     _configure_database(database_type, libgitlab)
 
     assert libgitlab.render_config() is True
-    with open(libgitlab.gitlab_config, 'r') as f:
+    with open(libgitlab.gitlab_config, "r") as f:
         config_lines = f.read().splitlines()
 
     _assert_database_rendered(database_type, config_lines)
