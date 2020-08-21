@@ -83,6 +83,39 @@ determining the problem, and manual intervention will likely be
 required. If all goes well, no further action will be required
 to continue using PostgreSQL.
 
+# PostgreSQL Upgrade
+
+Starting with version 13 of GitLab, PostgreSQL lower than version 11
+is deprecated, and will actively break in later 13.x versions due
+to migrations requiring newer schema primitives.
+
+The tested migration path with the charms is as such:
+
+Take a full GitLab backup:
+ * Access your gitlab unit via SSH: `juju ssh gitlab/0`
+ * Run the backup: `gitlab-backup`
+ * From your machine, SCP the resulting tar and keep safe: `juju scp gitlab/0:*.tar .`
+
+Dump the curent database (note, this will migrate ALL databases)
+ * Access your PostgreSQL server: `juju ssh postgresql/0`
+ * Access the postgres user: `sudo -u postgres -i`
+ * Back up all databases: `pg_dumpall > /tmp/gitlab.dump`
+ * From your machine, SCP the file: `juju scp postgresql/0:/tmp/gitlab.dump .`
+
+Deploy a new PostgreSQL application
+ * Deploy a new PostgreSQL 12 on Focal: `juju deploy cs:postgresql --series focal --config version=12 postgresql12`
+
+Migrate the database to the new PostgreSQL
+ * SCP the dump file to the new application: `juju scp gitlab.dump postgresql12/0:/tmp`
+ * Access the new postgresql server: `juju ssh postgresql12/0`
+ * Switch to the postgres user: `sudo -u postgres -i `
+ * Restore the DB: `psql < /tmp/gitlab.dump`
+
+Re-relate GitLab
+ * Remove old relation: `juju remove-relation gitlab postgresql:db-admin`
+ * Add new relation: `juju add-relation gitlab postgresql12:db-admin`
+ * Run an upgrade of GitLab: `juju run-action --wait gitlab/0 upgrade`
+
 # Contact Information
 
 This charm is written by James Hebden of the Pirate Charmers group.
