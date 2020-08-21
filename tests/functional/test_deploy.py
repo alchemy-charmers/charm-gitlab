@@ -11,12 +11,11 @@ pytestmark = [pytest.mark.asyncio]
 juju_repository = os.getenv("JUJU_REPOSITORY", ".").rstrip("/")
 series = [
     "bionic",
-    # cosmic packages don't exist for gitlab, so testing is pointless
-    # pytest.param('cosmic', marks=pytest.mark.xfail(reason='canary')),
+    "focal",
 ]
 sources = [
     ("local", "{}/builds/gitlab".format(juju_repository)),
-    # stub out until a version supporting postgres is on the store ("jujucharms", "cs:~pirate-charmers/gitlab"),
+    ("jujucharms", "cs:~pirate-charmers/gitlab"),
 ]
 
 

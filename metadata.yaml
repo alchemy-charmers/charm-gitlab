@@ -9,6 +9,7 @@ tags:
 subordinate: false
 series:
   - bionic
+  - focal
 provides:
   runner:
     interface: gitlab-ci
