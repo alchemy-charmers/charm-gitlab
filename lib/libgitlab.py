@@ -8,6 +8,8 @@ try:
 except ImportError:
     from urlparse import urlparse
 
+import errno
+import os
 import socket
 import subprocess
 
@@ -42,6 +44,7 @@ class GitlabHelper:
         self.set_package_name(self.charm_config["package_name"])
         self.kv = unitdata.kv()
         self.gitlab_commands_file = "/etc/gitlab/commands.load"
+        self.distro = host.get_distrib_codename()
 
     def set_package_name(self, name):
         """Parse and set the package name used to install and upgrade GitLab."""
@@ -49,6 +52,16 @@ class GitlabHelper:
             self.package_name = "gitlab-ee"
         else:
             self.package_name = "gitlab-ce"
+
+    def start(self):
+        """Start the GitLab service."""
+        host.service_start("gitlab")
+        return True
+
+    def stop(self):
+        """Stop the GitLab service."""
+        host.service_stop("gitlab")
+        return True
 
     def restart(self):
         """Restart the GitLab service."""
@@ -321,13 +334,26 @@ class GitlabHelper:
         self.kv.unset("redis_port")
         self.kv.unset("redis_pass")
 
-    def add_sources(self):
+    def add_pgsql_sources(self):
+        """Ensure the PostgreSQL apt repo is installed for the pgsql 12 client."""
+        pg_apt_repo = self.charm_config.get("pg_apt_repo")
+        pg_apt_key = self.charm_config.get("pg_apt_key")
+        apt_line = "deb {} {}-pgdg main".format(
+            pg_apt_repo, self.distro
+        )
+        hookenv.log(
+            "Installing and updating PG apt source: {} key {})".format(
+                apt_line, pg_apt_key
+            )
+        )
+        add_source(apt_line, pg_apt_key)
+
+    def add_gitlab_sources(self):
         """Ensure the GitLab apt repository is configured and updated for use."""
-        distro = host.get_distrib_codename()
         apt_repo = self.charm_config.get("apt_repo")
         apt_key = self.charm_config.get("apt_key")
         apt_line = "deb {}/{}/ubuntu {} main".format(
-            apt_repo, self.package_name, distro
+            apt_repo, self.package_name, self.distro
         )
         hookenv.log(
             "Installing and updating apt source for {}: {} key {})".format(
@@ -335,6 +361,11 @@ class GitlabHelper:
             )
         )
         add_source(apt_line, apt_key)
+
+    def add_sources(self):
+        """Install all APT sources."""
+        self.add_gitlab_sources()
+        self.add_pgsql_sources()
 
     def fetch_gitlab_apt_package(self):
         """Return reference to GitLab package information in the APT cache."""
@@ -390,9 +421,30 @@ class GitlabHelper:
 
     def gitlab_reconfigure_run(self):
         """Run gitlab-ctl reconfigure."""
-        subprocess.check_output(
-            ["/usr/bin/gitlab-ctl", "reconfigure"], stderr=subprocess.STDOUT
-        )
+        try:
+            subprocess.check_output(
+                ["/usr/bin/gitlab-ctl", "reconfigure"], stderr=subprocess.STDOUT
+            )
+        except subprocess.CalledProcessError:
+            return False
+        return True
+
+    def install_pgclient(self):
+        """Install the latest supported PostgreSQL client, and symlink into place."""
+        apt_install("postgresql-client-12")
+        self.symlink_binary("/usr/lib/postgresql/12/bin/pg_dump")
+        self.symlink_binary("/usr/lib/postgresql/12/bin/psql")
+
+    def symlink_binary(self, binary_path):
+        """Symlink a binary into GitLab's path."""
+        binary_name = os.path.basename(binary_path)
+        binary_dest_path = "/opt/gitlab/bin/{}".format(binary_name)
+        try:
+            os.symlink(binary_path, binary_dest_path)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                os.remove(binary_dest_path)
+                os.symlink(binary_path, binary_dest_path)
 
     def upgrade_package(self, version=None):
         """Upgrade GitLab to a specific version given an apt package version or wildcard."""
@@ -569,8 +621,17 @@ class GitlabHelper:
             hookenv.log("Skipping configuration due to missing DB config")
             return False
         if any_file_changed([self.gitlab_config]):
-            self.gitlab_reconfigure_run()
-        return True
+            if self.gitlab_reconfigure_run():
+                hookenv.status_set(
+                    "active",
+                    "GitLab configured."
+                )
+                return True
+        hookenv.status_set(
+            "blocked",
+            "GitLab configured failed. Check charm configuration and relations are correct."
+        )
+        return False
 
     def open_ports(self):
         """Open ports based on configuration."""
@@ -599,6 +660,8 @@ class GitlabHelper:
         runs the configuration routine to configure and start related services
         based on charm configuration and relation data.
         """
+        self.install_pgclient()
+
         if self.render_config():
             self.open_ports()
         else:

@@ -44,7 +44,6 @@ def remove_redis():
     hookenv.status_set("maintenance", "Cleaning up removed Redis relation")
     hookenv.log("Removing config for: {}".format(hookenv.remote_unit()))
     gitlab.remove_redis_conf()
-    hookenv.status_set("active", HEALTHY)
 
 
 @when("reverseproxy.departed")
@@ -52,8 +51,6 @@ def remove_proxy():
     """Remove the haproxy configuration when the relation is removed."""
     hookenv.status_set("maintenance", "Removing reverse proxy relation")
     hookenv.log("Removing config for: {}".format(hookenv.remote_unit()))
-
-    hookenv.status_set("active", HEALTHY)
     clear_flag("reverseproxy.configured")
 
 
@@ -94,6 +91,25 @@ def missing_redis_relation():
 def missing_all_relations():
     """Complain when neither the Redis or DB relations are related."""
     hookenv.status_set("blocked", "Missing relation to Redis and PostgreSQL")
+
+
+@when("gitlab.installed")
+@when('upgrade.series.in-progress')
+def disable_application():
+    """Stop GitLab and prepare for series upgrade."""
+    gitlab.stop()
+    set_flag('charm.application.disabled')
+    hookenv.status_set("blocked", "GitLab unit series upgrade in progress")
+
+
+@when('charm.application.disabled')
+@when_not('upgrade.series.in-progress')
+def enable_application():
+    """Start GitLab after running configure to ensure everything is consistent post series upgrade."""
+    gitlab.add_sources()
+    gitlab.configure()
+    gitlab.start()
+    clear_flag('charm.application.disabled')
 
 
 @when_all("gitlab.installed", "endpoint.redis.available")
@@ -224,3 +240,9 @@ def publish_runner_config():
 def handle_runner_departed():
     """Handle relations departed."""
     clear_flag("runner.published")
+
+
+@when_all("postgresql.related", "redis.related", "gitlab.configured")
+def update_status_healthy():
+    """Update status if all flags are set to indicate good charm health."""
+    hookenv.status_set("active", HEALTHY)

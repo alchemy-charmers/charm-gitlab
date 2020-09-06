@@ -10,6 +10,14 @@ options:
   apt_repo:
     type: string
     default: "https://packages.gitlab.com/gitlab"
+    description: "The APT source repository to use for the distro PostgreSQL client."
+  pg_apt_key:
+    type: string
+    default: "B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8"
+    description: "The APT signing key used for the repository specified by pg_apt_repo"
+  pg_apt_repo:
+    type: string
+    default: "http://apt.postgresql.org/pub/repos/apt/"
     description: "The APT source repository to configure before installing GitLab. The Ubuntu distribution, component, /ubuntu suffix, as well as package type (gitlab-ce/gitlab-ee) will be appended. e.g. gitlab-ce/ubuntu bionic main"
   external_url:
     type: string
