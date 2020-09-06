@@ -242,7 +242,7 @@ def handle_runner_departed():
     clear_flag("runner.published")
 
 
-@when_all("postgresql.related", "redis.related", "gitlab.configured")
+@when_all("gitlab.installed", "endpoint.redis.available", "pgsql.database.available")
 def update_status_healthy():
     """Update status if all flags are set to indicate good charm health."""
     hookenv.status_set("active", HEALTHY)
